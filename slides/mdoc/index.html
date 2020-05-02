@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Monocle 3: a peek into the future</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle
+
+<a href="https://github.com/fp-tower">
+  <img src="img/fp-tower/solid-color-logo.svg" alt="logo" style="width:600px;"/>
+</a>
+
+<br>
+<br>
+
+
+# Monocle 3: a peek into the future
+Julien Truffaut • `julien@fp-tower.com`
+
+???
+- notes here
+- see https://remarkjs.com/#1
+
+
+---
+layout: true
+
+<div class="footer">
+  <a href="https://github.com/fp-tower">
+    <img src="img/fp-tower/symbol-solid-gray-b3b3b3.svg" alt="logo" style="width:100px;"/>
+  </a>
+</div>
+
+---
+# Inline Scala examples
+
+```scala mdoc:silent
+case class Person(name: String, age: Int)
+```
+
+```tut:book
+val john = Person("John", 23)
+
+john.age
+
+john.copy(age = 30)
+```
+
+???
+- see https://github.com/tpolecat/tut
+
+---
+# Scala examples from core module
+
+```scala mdoc:silent
+import monocle3.Foo.{FooInt, FooString}
+```
+
+```scala mdoc
+val fooInt = FooInt(5)
+val fooString = FooString("Hello World")
+
+val foos = List(fooInt, fooString)
+```
+
+---
+class: center, middle
+
+# Thanks!
+Code and slides at [fp-tower/monocle-3-a-peek-into-the-future](https://github.com/fp-tower/monocle-3-a-peek-into-the-future) on GitHub
+
+## Questions?
+
+
+ </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js">
+    </script>
+    <script>
+        var slideshow = remark.create({
+            ratio: "16:9",
+            slideNumberFormat: '%current%',
+            highlightLines: true
+        });
+    </script>
+  </body>
+</html>
