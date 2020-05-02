@@ -26,6 +26,7 @@ h2, h3 { font-family: 'Yanone Kaffeesatz'; font-weight: normal; color: #6f9a9c; 
 .pull-right { float: right; width: 47%; }
 .fifty-two-right { float: right; width: 52%; }
 .large-right { float: right; width: 57%; }
+.sixty-two-right { float: right; width: 62%; }
 .extra-large-right { float: left; width: 67%; }
 .cols { display: flex; }
 .fifty { flex: 50%; }
@@ -33,6 +34,7 @@ h2, h3 { font-family: 'Yanone Kaffeesatz'; font-weight: normal; color: #6f9a9c; 
 .fortyfive-middle{ flex: 45%; display: flex; align-items: center; justify-content: center;}
 .ten { flex: 10%; }
 .footer { position: absolute; bottom: 12px; left: 45px }
+.watermark { position: absolute; top: 50px; right: 60px }
 .reference {font-size: 16px; position: fixed; left: 50%; bottom: 12px; transform: translate(-50%, -50%); margin: 0 auto;}
 .reference-top-left {font-size: 16px; position: fixed; left: 12px; top: 12px;}
 .reference-top-right {font-size: 16px; position: fixed; right: 12px; top: 12px;}
