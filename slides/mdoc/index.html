@@ -8,23 +8,15 @@
   <body>
     <textarea id="source">
 
-class: center, middle
+background-image: url(img/fp-tower/website-background.svg)
 
-<a href="https://github.com/fp-tower">
-  <img src="img/fp-tower/solid-color-logo.svg" alt="logo" style="width:600px;"/>
-</a>
+class: center, middle, white
+
+.title[Monocle 3: a peek into the future]
 
 <br>
-<br>
 
-
-# Monocle 3: a peek into the future
-Julien Truffaut • `julien@fp-tower.com`
-
-???
-- notes here
-- see https://remarkjs.com/#1
-
+by Julien Truffaut
 
 ---
 layout: true
@@ -34,6 +26,7 @@ layout: true
     <img src="img/fp-tower/grey-4-fp-watermark-image-raster-transparent-file.png" alt="logo" style="width:200px;"/>
   </a>
 </div>
+
 
 ---
 # Agenda
@@ -47,7 +40,7 @@ layout: true
 ## 3. The future with Dotty/Scala 3
 
 ---
-.h1[# Julien Truffaut]
+# Julien Truffaut
 
 
 <br>
@@ -66,7 +59,84 @@ layout: true
 ]]
 
 ---
-# foo
+# Mutation
+
+<br>
+
+
+```scala mdoc:invisible
+case class User(var name: String, var address: Address)
+
+case class Address(var streetNumber: Int, var postCode: String)
+```
+
+```scala
+case class User(`var` name: String, `var` address: Address)
+
+case class Address(`var` streetNumber: Int, `var` postCode: String)
+```
+
+
+```scala mdoc
+val julien = User("julien", Address(12, "E16 4SR"))
+```
+
+```scala mdoc:reset:invisible
+case class User(var name: String, var address: Address)
+case class Address(var streetNumber: Int, var postCode: String)
+
+val julien = User("julien", Address(12, "E16 4SR"))
+```
+
+```scala mdoc
+julien.address.streetNumber = 16
+
+julien
+```
+
+---
+# FP uses immutable data
+
+<br>
+
+## 1. Easier to test
+
+## 2. Nice features: versioning, rollback
+
+## 3. Share data without risk
+
+## 4. Concurrency
+
+
+---
+# Concurrency
+
+.small-left[
+<img src="img/corecursive_400x400.jpg" alt="corecursive" style="width:300px;"/>
+
+## CoRecursive podcast
+]
+
+.sixty-two-right[
+<br><br><br>
+## Rust and bitter C++ developers with Jim Blandy
+]
+
+???
+We had an engineer at Mozilla who decided to use a thread sanitiser tool to look for data races
+[in their C ++ codebase]... and he found that in every case where firefox use threads, they had data races,
+not most, every single case.
+
+---
+# How do you change immutable data?
+
+<br>
+
+## TODO info graphics
+
+.reference-bottom-right[<img src="img/impurepics/profile.png" alt="impurepics" style="width:100px;"/>]
+
+
 
 ---
 class: center, middle
@@ -90,7 +160,8 @@ https://fp-tower.github.io/monocle-3-a-peek-into-the-future/index.html
         var slideshow = remark.create({
             ratio: "16:9",
             slideNumberFormat: '',
-            highlightLines: true
+            highlightLines: true,
+            highlightSpans: true,
         });
     </script>
   </body>
