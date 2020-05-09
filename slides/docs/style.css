@@ -2,6 +2,10 @@
 @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
 @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
 
+@font-face{
+    font-family: 'Bebas-Regular';
+    src: url('fonts/Bebas-Regular.ttf');
+}
 
 body { font-family: 'Droid Serif'; color: #333333; }
 h1 { font-family: 'Yanone Kaffeesatz'; font-weight: normal; color: #004750; }
@@ -40,7 +44,43 @@ h2, h3 { font-family: 'Yanone Kaffeesatz'; font-weight: normal; color: #6f9a9c; 
 .reference-top-right {font-size: 16px; position: fixed; right: 12px; top: 12px;}
 .reference-bottom-right {font-size: 16px; position: fixed; right: 12px; bottom: 12px;}
 .white { color: white }
-.title { font-family: 'Yanone Kaffeesatz'; font-weight: normal; font-size: 64px; }
+.title { font-family: 'Bebas-Regular'; font-weight: normal; font-size: 64px; }
 table { border-collapse: collapse; display: inline-block; }
 th, td { padding: 10px; border: 1px solid black; }
 tr:nth-child(even) {background-color: #f2f2f2;}
+
+.quote {
+    display: inline-block;
+    margin: 1em;
+    overflow: hidden;
+}
+.quote blockquote {
+    background-color: #fff;
+    border: solid 2px #757575;
+    display: inline-block;
+    margin: 0;
+    padding: 1em;
+    position: relative;
+}
+.quote blockquote:before {
+    background-color: #fff;
+    bottom: -10%;
+    content: "";
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: -10%;
+    transform: rotate(-15deg) skew(5deg);
+}
+.quote blockquote cite {
+    display: block;
+    font-style: italic;
+    text-align: right;
+}
+.quote blockquote cite:before {
+    content: "- ";
+}
+.quote blockquote > * {
+    position: relative;
+    z-index: 1;
+}
