@@ -30,7 +30,11 @@ jobs:
           path: ~/.sbt
           key: ${{ runner.os }}-sbt-${{ hashFiles('build.sbt') }}-${{ hashFiles('project/*.scala') }}
           restore-keys: ${{ runner.os }}-sbt-
-      - name: Run tests
-        run: csbt test
-      - name: Export slides
-        run: bin/gen-pdf.sh
+      - name: Run tests and doc
+        run: csbt test mdoc
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@releases/v3
+        with:
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          BRANCH: gh-pages # The branch the action should deploy to.
+          FOLDER: slides/docs # The folder the action should deploy.
