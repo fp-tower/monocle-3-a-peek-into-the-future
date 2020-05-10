@@ -9,7 +9,7 @@ mkdir pdf screenshots
 
 for file in *.html
 do
- decktape remark "$file" "${file%.html}.pdf" --chrome-arg=--allow-file-access-from-files \
+ `npm bin`/decktape remark "$file" "${file%.html}.pdf" --chrome-arg=--allow-file-access-from-files \
   --screenshots --size 1920x1080 --screenshots-directory screenshots
 done
 
