@@ -12,8 +12,6 @@ jobs:
           fetch-depth: 100
       - name: Setup Scala
         uses: olafurpg/setup-scala@v7
-      - name: Checking your code format
-        run: csbt scalafmtCheck
       - name: Set up npm
         uses: actions/setup-node@v1
         with:
