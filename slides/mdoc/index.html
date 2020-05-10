@@ -84,6 +84,8 @@ val julien = User("julien", Address(12, "E16 4SR"))
 ```
 
 ```scala mdoc
+julien.address.streetNumber
+
 julien.address.streetNumber = 16
 
 julien
@@ -127,13 +129,238 @@ not most, every single case.</p>
 ]
 
 ---
-# How do you change immutable data?
+<br><br><br>
+.center[
+<img src="img/impurepics/Lightbulb-0.png" alt="Lightbub 0" style="width:1000px;"/>
+]
+.reference-top-left[<img src="img/impurepics/profile.png" alt="impurepics" style="width:100px;"/>]
+
+---
+<br><br><br>
+.center[
+<img src="img/impurepics/Lightbulb-1.png" alt="Lightbub 1" style="width:1000px;"/>
+]
+.reference-top-left[<img src="img/impurepics/profile.png" alt="impurepics" style="width:100px;"/>]
+
+---
+<br><br><br>
+.center[
+<img src="img/impurepics/Lightbulb-2.png" alt="Lightbub 2" style="width:1000px;"/>
+]
+.reference-top-left[<img src="img/impurepics/profile.png" alt="impurepics" style="width:100px;"/>]
+
+---
+<br><br><br>
+.center[
+<img src="img/impurepics/Lightbulb-3.png" alt="Lightbub 3" style="width:1000px;"/>
+]
+.reference-top-left[<img src="img/impurepics/profile.png" alt="impurepics" style="width:100px;"/>]
+
+---
+<br><br><br>
+.center[
+<img src="img/impurepics/Lightbulb-4.png" alt="Lightbub 4" style="width:1000px;"/>
+]
+.reference-top-left[<img src="img/impurepics/profile.png" alt="impurepics" style="width:100px;"/>]
+
+---
+<br><br><br>
+.center[
+<img src="img/impurepics/Lightbulb-5.png" alt="Lightbub 5" style="width:1000px;"/>
+]
+.reference-top-left[<img src="img/impurepics/profile.png" alt="impurepics" style="width:100px;"/>]
+
+---
+background-image: url(img/diagrams/immutable-world.svg)
+
+---
+# Example #1: Simplest case
 
 <br>
 
-## TODO info graphics
+```scala mdoc:reset:silent
+case class User(name: String, address: Address)
+case class Address(streetNumber: Int, postCode: String)
 
-.reference-bottom-right[<img src="img/impurepics/profile.png" alt="impurepics" style="width:100px;"/>]
+val julien = User("Julien", Address(12, "E16 4SR"))
+```
+
+.center[
+### How do we change the street number using vanilla Scala?
+]
+
+--
+
+```scala mdoc
+julien.copy(address =
+  julien.address.copy(streetNumber = 16)
+)
+```
+
+---
+# Example #2: Enumeration
+
+<br>
+
+```scala mdoc:reset:silent
+import java.time.YearMonth
+
+sealed trait PaymentMethod
+
+case class DebitCard(
+  cardNumber     : String,
+  expirationDate : YearMonth,
+  securityCode   : Int
+) extends PaymentMethod
+
+case class PayPal(email: String) extends PaymentMethod
+```
+
+---
+# Example #2: Enumeration
+
+<br>
+
+```scala mdoc:invisible
+case class Address(streetNumber: Int, postCode: String)
+```
+
+```scala mdoc:silent
+case class User(name: String, address: Address, paymentMethod: PaymentMethod)
+
+val julien = User(
+  "Julien",
+  Address(12, "E16 4SR"),
+  DebitCard("4568 5794 3109 3087", YearMonth.of(2022, 4), 361)
+)
+```
+
+.center[
+### How do we change the expiry date using vanilla Scala?
+]
+
+---
+# Example #2: Enumeration
+
+<br>
+
+```scala mdoc:invisible:fail
+julien.copy(paymentMethod =
+  julien.paymentMethod.copy(expirationDate = YearMonth.of(2024, 1)
+  )
+)
+```
+
+```scala
+julien.copy(paymentMethod =
+  julien.paymentMethod.copy(expirationDate = YearMonth.of(2024, 1)
+  )
+)
+
+// error: value `copy` is not a member of PaymentMethod
+//   julien.paymentMethod.copy(expirationDate = YearMonth.of(2024, 1)
+//   ^^^^^^^^^^^^^^^^^^^^^^^^^
+//
+// error: not found: value `expirationDate`
+//   julien.paymentMethod.copy(expirationDate = YearMonth.of(2024, 1)
+//
+```
+
+---
+# Example #2: Enumeration
+
+<br>
+
+```scala mdoc
+def updateExpiry(user: User, newExpiry: YearMonth): User =
+  user.copy(paymentMethod =
+    user.paymentMethod match {
+      case card  : DebitCard => card.copy(expirationDate = YearMonth.of(2024, 1))
+      case paypal: PayPal    => paypal
+    }
+  )
+```
+
+---
+# Example #3: Data structures
+
+<br>
+
+```scala mdoc:reset:invisible
+import java.time.YearMonth
+case class Address(streetNumber: Int, postCode: String)
+
+sealed trait PaymentMethod
+case class DebitCard(cardNumber: String, expirationDate: YearMonth, securityCode: Int) extends PaymentMethod
+case class PayPal(email: String) extends PaymentMethod
+```
+
+```scala mdoc
+case class User(name: String, address: Address, paymentMethods: Map[String, PaymentMethod])
+
+val julien = User(
+  "Julien",
+  Address(12, "E16 4SR"),
+  Map(
+    "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(2021, 7), 995),
+    "Personal" -> PayPal("julien@fp-tower.com"),
+  )
+)
+```
+
+---
+# Example #3: Update or report failure
+
+<br>
+
+```scala mdoc:reset:invisible
+import java.time.YearMonth
+case class User(name: String, address: Address, paymentMethod: PaymentMethod)
+case class Address(streetNumber: Int, postCode: String)
+
+sealed trait PaymentMethod
+case class DebitCard(cardNumber: String, expirationDate: YearMonth, securityCode: Int) extends PaymentMethod
+case class PayPal(email: String) extends PaymentMethod
+
+val julien = User(
+  "Julien",
+  Address(12, "E16 4SR"),
+  DebitCard("4568 5794 3109 3087", YearMonth.of(2022, 4), 361)
+)
+```
+
+```scala mdoc
+def updateExpiry(user: User, newExpiry: YearMonth): Either[String, User] =
+  user.paymentMethod match {
+    case paypal: PayPal    => Left("Unexpected payment method")
+    case card  : DebitCard => Right(
+      user.copy(paymentMethod =
+        card.copy(expirationDate = newExpiry)
+      )
+    )
+  }
+
+updateExpiry(julien, YearMonth.of(2024, 1))
+```
+
+---
+
+---
+# Optic
+
+<br>
+
+```scala mdoc:silent
+trait Optic[From, To] {
+
+  def get(from: From): To
+
+  def replace(from: From, newTo: To): From
+
+  def modify(from: From, update: To => To): From
+
+}
+```
 
 ---
 background-image: url(img/fp-tower/website-background.svg)
