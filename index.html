@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Monocle 3: a peek into the future</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+  </head>
+  <body>
+    <textarea id="source">
+
+
+layout: true
+
+<div class="watermark">
+  <a href="https://github.com/fp-tower">
+    <img src="img/fp-tower/grey-4-fp-watermark-image-raster-transparent-file.png" alt="logo" style="width:200px;"/>
+  </a>
+</div>
+
+
+---
+background-image: url(img/fp-tower/website-background.svg)
+
+class: center, middle, white
+
+.title[Monocle 3: a peek into the future]
+
+---
+# Julien Truffaut
+
+<br>
+
+.medium-left[
+<img src="img/fp-tower/julien-truffaut.jpg" alt="Julien Truffaut" style="width:300px;"/>
+]
+
+.large-right[<br>
+## Backend Scala developer
+
+## Maintainer of Monocle 🧐
+
+## Author of Scala FP courses at fp-tower
+]
+
+---
+# Agenda
+
+<br>
+
+## 1. Why optics?
+
+## 2. Current state of Monocle
+
+## 3. The future with Dotty/Scala 3
+
+---
+# Mutation
+
+<br>
+
+
+
+```scala
+case class User(`var` name: String, `var` address: Address)
+
+case class Address(`var` streetNumber: Int, `var` postCode: String)
+```
+
+
+```scala
+val julien = User("julien", Address(12, "E16 4SR"))
+// julien: User = User("julien", Address(12, "E16 4SR"))
+```
+
+
+```scala
+julien.address.streetNumber
+// res1: Int = 12
+
+julien.address.streetNumber = 16
+
+julien
+// res3: User = User("julien", Address(16, "E16 4SR"))
+```
+
+---
+# FP uses immutable data
+
+<br>
+
+## 1. Easier to test
+
+## 2. Free features: versioning, rollback
+
+## 3. Share data without risk
+
+## 4. Concurrency
+
+---
+# Concurrency
+
+.small-left[
+<img src="img/corecursive_400x400.jpg" alt="corecursive" style="width:300px;"/>
+]
+
+.sixty-two-right[
+<br>
+<div class="quote">
+  <blockquote>
+    <p>We had an engineer at Mozilla who decided to use a thread sanitiser tool to look for data races
+[in our C ++ codebase]... and he found that in every case where firefox use threads, they had data races,
+not most, every single case.</p>
+    <cite>Jim Blandy</cite>
+  </blockquote>
+</div>
+]
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+.center[
+## CoRecursive podcast: Rust and bitter C++ developers
+]
+
+---
+<br><br><br>
+.center[
+<img src="img/impurepics/Lightbulb-0.png" alt="Lightbub 0" style="width:1000px;"/>
+]
+.reference-top-left[<img src="img/impurepics/profile.png" alt="impurepics" style="width:100px;"/>]
+
+---
+<br><br><br>
+.center[
+<img src="img/impurepics/Lightbulb-1.png" alt="Lightbub 1" style="width:1000px;"/>
+]
+.reference-top-left[<img src="img/impurepics/profile.png" alt="impurepics" style="width:100px;"/>]
+
+---
+<br><br><br>
+.center[
+<img src="img/impurepics/Lightbulb-2.png" alt="Lightbub 2" style="width:1000px;"/>
+]
+.reference-top-left[<img src="img/impurepics/profile.png" alt="impurepics" style="width:100px;"/>]
+
+---
+<br><br><br>
+.center[
+<img src="img/impurepics/Lightbulb-3.png" alt="Lightbub 3" style="width:1000px;"/>
+]
+.reference-top-left[<img src="img/impurepics/profile.png" alt="impurepics" style="width:100px;"/>]
+
+---
+<br><br><br>
+.center[
+<img src="img/impurepics/Lightbulb-4.png" alt="Lightbub 4" style="width:1000px;"/>
+]
+.reference-top-left[<img src="img/impurepics/profile.png" alt="impurepics" style="width:100px;"/>]
+
+---
+<br><br><br>
+.center[
+<img src="img/impurepics/Lightbulb-5.png" alt="Lightbub 5" style="width:1000px;"/>
+]
+.reference-top-left[<img src="img/impurepics/profile.png" alt="impurepics" style="width:100px;"/>]
+
+---
+background-image: url(img/diagrams/immutable-world.svg)
+
+---
+# Example #1: Simplest case
+
+<br>
+
+```scala
+case class User(name: String, address: Address)
+case class Address(streetNumber: Int, postCode: String)
+
+val julien = User("Julien", Address(12, "E16 4SR"))
+```
+
+.center[
+### How do we change the street number using vanilla Scala?
+]
+
+--
+
+```scala
+julien.copy(address =
+  julien.address.copy(streetNumber = 16)
+)
+// res5: User = User("Julien", Address(16, "E16 4SR"))
+```
+
+---
+# Example #2: Enumeration
+
+<br>
+
+```scala
+import java.time.YearMonth
+
+sealed trait PaymentMethod
+
+case class DebitCard(
+  cardNumber     : String,
+  expirationDate : YearMonth,
+  securityCode   : Int
+) extends PaymentMethod
+
+case class PayPal(email: String) extends PaymentMethod
+```
+
+---
+# Example #2: Enumeration
+
+<br>
+
+
+```scala
+case class User(name: String, address: Address, paymentMethod: PaymentMethod)
+
+val julien = User(
+  "Julien",
+  Address(12, "E16 4SR"),
+  DebitCard("4568 5794 3109 3087", YearMonth.of(2022, 4), 361)
+)
+```
+
+.center[
+### How do we change the expiry date using vanilla Scala?
+]
+
+---
+# Example #2: Enumeration
+
+<br>
+
+
+```scala
+julien.copy(paymentMethod =
+  julien.paymentMethod.copy(expirationDate = YearMonth.of(2024, 1)
+  )
+)
+
+// error: value `copy` is not a member of PaymentMethod
+//   julien.paymentMethod.copy(expirationDate = YearMonth.of(2024, 1)
+//   ^^^^^^^^^^^^^^^^^^^^^^^^^
+//
+// error: not found: value `expirationDate`
+//   julien.paymentMethod.copy(expirationDate = YearMonth.of(2024, 1)
+//
+```
+
+---
+# Example #2: Enumeration
+
+<br>
+
+```scala
+def updateExpiry(user: User, newExpiry: YearMonth): User =
+  user.copy(paymentMethod =
+    user.paymentMethod match {
+      case card  : DebitCard => card.copy(expirationDate = YearMonth.of(2024, 1))
+      case paypal: PayPal    => paypal
+    }
+  )
+```
+
+---
+# Example #3: Data structures
+
+<br>
+
+
+```scala
+case class User(name: String, address: Address, paymentMethods: Map[String, PaymentMethod])
+
+val julien = User(
+  "Julien",
+  Address(12, "E16 4SR"),
+  Map(
+    "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(2021, 7), 995),
+    "Personal" -> PayPal("julien@fp-tower.com"),
+  )
+)
+// julien: User = User(
+//   "Julien",
+//   Address(12, "E16 4SR"),
+//   Map(
+//     "Business" -> DebitCard("4568 8980 2376 5431", 2021-07, 995),
+//     "Personal" -> PayPal("julien@fp-tower.com")
+//   )
+// )
+```
+
+---
+# Example #3: Update or report failure
+
+<br>
+
+
+```scala
+def updateExpiry(user: User, newExpiry: YearMonth): Either[String, User] =
+  user.paymentMethod match {
+    case paypal: PayPal    => Left("Unexpected payment method")
+    case card  : DebitCard => Right(
+      user.copy(paymentMethod =
+        card.copy(expirationDate = newExpiry)
+      )
+    )
+  }
+
+updateExpiry(julien, YearMonth.of(2024, 1))
+// res10: Either[String, User] = Right(
+//   User(
+//     "Julien",
+//     Address(12, "E16 4SR"),
+//     DebitCard("4568 5794 3109 3087", 2024-01, 361)
+//   )
+// )
+```
+
+---
+
+---
+# Optic
+
+<br>
+
+```scala
+trait Optic[From, To] {
+
+  def get(from: From): To
+
+  def replace(from: From, newTo: To): From
+
+  def modify(from: From, update: To => To): From
+
+}
+```
+
+---
+background-image: url(img/fp-tower/website-background.svg)
+
+class: center, middle, white
+
+.title[Thank you,<br>Any questions?]
+
+ </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js">
+    </script>
+    <script>
+        var slideshow = remark.create({
+            ratio: "16:9",
+            slideNumberFormat: '',
+            highlightLines: true,
+            highlightSpans: true,
+        });
+    </script>
+  </body>
+</html>
