@@ -17,7 +17,7 @@ jobs:
         with:
          node-version: '12'
       - name: Set up decktape
-        run: npm install -g decktape
+        run: npm install decktape
       - name: Cache dependencies
         uses: actions/cache@v1
         with:
