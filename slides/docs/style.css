@@ -40,7 +40,7 @@ h2, h3 { font-family: 'Yanone Kaffeesatz'; font-weight: normal; color: #6f9a9c; 
 .footer { position: absolute; bottom: 12px; left: 45px }
 .watermark { position: absolute; top: 50px; right: 80px }
 .reference {font-size: 16px; position: fixed; left: 50%; bottom: 12px; transform: translate(-50%, -50%); margin: 0 auto;}
-.reference-top-left {font-size: 16px; position: fixed; left: 12px; top: 12px;}
+.reference-top-left {font-size: 16px; position: fixed; left: 30px; top: 63px;}
 .reference-top-right {font-size: 16px; position: fixed; right: 12px; top: 12px;}
 .reference-bottom-right {font-size: 16px; position: fixed; right: 12px; bottom: 12px;}
 .white { color: white }
