@@ -4,6 +4,24 @@
     <title>Monocle 3: a peek into the future</title>
     <meta charset="utf-8">
     <link rel="stylesheet" type="text/css" href="style.css"/>
+    <!-- Primary Meta Tags -->
+    <title>Monocle 3: A peek into the future</title>
+    <meta name="title" content="Monocle 3: A peek into the future">
+    <meta name="description" content="User-friendly and powerful optics for Dotty/Scala 3">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://metatags.io/">
+    <meta property="og:title" content="Monocle 3: A peek into the future">
+    <meta property="og:description" content="User-friendly and powerful optics for Dotty/Scala 3">
+    <meta property="og:image" content="https://metatags.io/assets/meta-tags-16a33a6a8531e519cc0936fbba0ad904e52d35f34a46c97a2c9f6f7dd7d336f2.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://metatags.io/">
+    <meta property="twitter:title" content="Monocle 3: A peek into the future">
+    <meta property="twitter:description" content="User-friendly and powerful optics for Dotty/Scala 3">
+    <meta property="twitter:image" content="img/fp-tower/social-preview.png">
   </head>
   <body>
     <textarea id="source">
@@ -129,6 +147,11 @@ not most, every single case.</p>
 ]
 
 ---
+class: center, middle
+
+# How do we change something immutable?
+
+---
 <br><br><br>
 .center[
 <img src="img/impurepics/Lightbulb-0.png" alt="Lightbub 0" style="width:1000px;"/>
@@ -186,7 +209,7 @@ val julien = User("Julien", Address(12, "E16 4SR"))
 ```
 
 .center[
-### How do we change the street number using vanilla Scala?
+## How do we change the street number using vanilla Scala?
 ]
 
 --
@@ -203,17 +226,15 @@ julien.copy(address =
 <br>
 
 ```scala mdoc:reset:silent
-import java.time.YearMonth
-
 sealed trait PaymentMethod
+
+case class PayPal(email: String) extends PaymentMethod
 
 case class DebitCard(
   cardNumber     : String,
-  expirationDate : YearMonth,
+  expirationDate : java.time.YearMonth,
   securityCode   : Int
 ) extends PaymentMethod
-
-case class PayPal(email: String) extends PaymentMethod
 ```
 
 ---
@@ -222,6 +243,8 @@ case class PayPal(email: String) extends PaymentMethod
 <br>
 
 ```scala mdoc:invisible
+import java.time.YearMonth
+
 case class Address(streetNumber: Int, postCode: String)
 ```
 
@@ -233,10 +256,14 @@ val julien = User(
   Address(12, "E16 4SR"),
   DebitCard("4568 5794 3109 3087", YearMonth.of(2022, 4), 361)
 )
+
+val anna = User("Anna", Address(10, "EC2M 7EB"), PayPal("anna@fp-tower.com"))
 ```
 
+<br>
+
 .center[
-### How do we change the expiry date using vanilla Scala?
+## How do we change the expiry date using vanilla Scala?
 ]
 
 ---
@@ -245,24 +272,25 @@ val julien = User(
 <br>
 
 ```scala mdoc:invisible:fail
-julien.copy(paymentMethod =
-  julien.paymentMethod.copy(expirationDate = YearMonth.of(2024, 1)
+def updateExpiry(user: User, newExpiry: YearMonth): User =
+  user.copy(paymentMethod =
+    user.paymentMethod.copy(expirationDate = newExpiry
+    )
   )
-)
 ```
 
 ```scala
-julien.copy(paymentMethod =
-  julien.paymentMethod.copy(expirationDate = YearMonth.of(2024, 1)
+def updateExpiry(user: User, newExpiry: YearMonth): User =
+  user.copy(paymentMethod =
+    user.paymentMethod.copy(expirationDate = newExpiry)
   )
-)
 
 // error: value `copy` is not a member of PaymentMethod
-//   julien.paymentMethod.copy(expirationDate = YearMonth.of(2024, 1)
+//   user.paymentMethod.copy(expirationDate = newExpiry)
 //   ^^^^^^^^^^^^^^^^^^^^^^^^^
 //
 // error: not found: value `expirationDate`
-//   julien.paymentMethod.copy(expirationDate = YearMonth.of(2024, 1)
+//   user.paymentMethod.copy(expirationDate = newExpiry)
 //
 ```
 
@@ -275,14 +303,28 @@ julien.copy(paymentMethod =
 def updateExpiry(user: User, newExpiry: YearMonth): User =
   user.copy(paymentMethod =
     user.paymentMethod match {
-      case card  : DebitCard => card.copy(expirationDate = YearMonth.of(2024, 1))
       case paypal: PayPal    => paypal
+      case card  : DebitCard => card.copy(expirationDate = newExpiry)
     }
   )
 ```
 
+.small-code[
+.pull-left[
+```scala mdoc
+updateExpiry(julien, YearMonth.of(2024, 1))
+```
+]
+
+.pull-right[
+```scala mdoc
+updateExpiry(anna, YearMonth.of(2024, 1))
+```
+]
+]
+
 ---
-# Example #3: Data structures
+# Example #3: Data structure
 
 <br>
 
@@ -295,55 +337,42 @@ case class DebitCard(cardNumber: String, expirationDate: YearMonth, securityCode
 case class PayPal(email: String) extends PaymentMethod
 ```
 
-```scala mdoc
+```scala mdoc:silent
 case class User(name: String, address: Address, paymentMethods: Map[String, PaymentMethod])
 
 val julien = User(
   "Julien",
   Address(12, "E16 4SR"),
   Map(
-    "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(2021, 7), 995),
     "Personal" -> PayPal("julien@fp-tower.com"),
+    "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(2021, 7), 995)
   )
 )
 ```
 
+<br>
+
+.center[
+## How do we change the expiry date of a payment method?
+]
+
 ---
-# Example #3: Update or report failure
+# Example #3: Data structure
 
 <br>
 
-```scala mdoc:reset:invisible
-import java.time.YearMonth
-case class User(name: String, address: Address, paymentMethod: PaymentMethod)
-case class Address(streetNumber: Int, postCode: String)
-
-sealed trait PaymentMethod
-case class DebitCard(cardNumber: String, expirationDate: YearMonth, securityCode: Int) extends PaymentMethod
-case class PayPal(email: String) extends PaymentMethod
-
-val julien = User(
-  "Julien",
-  Address(12, "E16 4SR"),
-  DebitCard("4568 5794 3109 3087", YearMonth.of(2022, 4), 361)
-)
-```
-
 ```scala mdoc
-def updateExpiry(user: User, newExpiry: YearMonth): Either[String, User] =
-  user.paymentMethod match {
-    case paypal: PayPal    => Left("Unexpected payment method")
-    case card  : DebitCard => Right(
-      user.copy(paymentMethod =
-        card.copy(expirationDate = newExpiry)
-      )
-    )
-  }
-
-updateExpiry(julien, YearMonth.of(2024, 1))
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  user.copy(paymentMethods =
+    user.paymentMethods.get(paymentName) match {
+      case None                    => user.paymentMethods
+      case Some(paypal: PayPal)    => user.paymentMethods
+      case Some(card  : DebitCard) =>
+        val updatedCard = card.copy(expirationDate = newExpiry)
+        user.paymentMethods.updated(paymentName, updatedCard)
+    }
+  )
 ```
-
----
 
 ---
 # Optic
