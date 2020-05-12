@@ -1,9 +1,0 @@
-{
-  "name": "monocle-3-a-peek-into-the-future",
-  "description": "",
-  "version": "0.1.0",
-  "dependencies": {
-    "decktape": "^2.11.0"
-  },
-  "devDependencies": {}
-}
