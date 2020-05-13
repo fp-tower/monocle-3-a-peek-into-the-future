@@ -186,7 +186,15 @@ class: center, middle
 .reference-top-left[.large[@impurepics]]
 
 ---
-background-image: url(img/diagrams/immutable-world.svg)
+background-image: url(img/diagrams/lightbulb-1.svg)
+
+---
+background-image: url(img/diagrams/lightbulb-2.svg)
+
+---
+class: center, middle
+
+# How do we copy immutable objects in Scala?
 
 ---
 # Example #1: Simplest case
@@ -396,7 +404,7 @@ trait Optic[From, To] {
 <br>
 
 .center[
-## Lens, Optional, Traversal, ...
+## Lens, Optional, Traversal, Prism, Iso, ...
 ]
 
 ---
@@ -442,7 +450,8 @@ paymentMethods
 ]
 
 
-<img src="img/diagrams/user-to-expiration-date-1.svg" alt="User to expiration date" style="width:430px;"/>
+<img src="img/diagrams/user-to-expiration-date-2.svg" alt="User to expiration date " style="width:430px;"/>
+
 
 
 ---
@@ -451,7 +460,7 @@ class: center, middle
 # Why optics are not popular in Scala?
 
 ---
-class: small-code
+class: medium-code
 
 # Vanilla Scala vs Optics
 
@@ -471,8 +480,6 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
   )
 ```
 
-<br>
-
 ```scala
 def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
   paymentMethods
@@ -483,6 +490,8 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
 ```
 
 ---
+class: medium-code
+
 # Problem #1: Optics creation
 
 <br>
@@ -506,6 +515,8 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
 ```
 
 ---
+class: medium-code
+
 # Problem #1: Optics creation
 
 <br>
@@ -528,16 +539,18 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
 ```
 
 ---
-# Optics creation via macros
+class: medium-code
+
+# Monocle 2 macros
 
 <br>
 
 ```scala
 import monocle.macros.{GenLens, GenPrism}
 
-val paymentMethods: Optic[User, Map[String, PaymentMethod]] = GenLens[User](_.paymentMethods)
-val debitCard     : Optic[PaymentMethod, DebitCard] = GenPrism[PaymentMethod, DebitCard]
-val expirationDate: Optic[DebitCard, YearMonth] = GenLens[DebitCard](_.expirationDate)
+val paymentMethods = GenLens[User](_.paymentMethods)
+val debitCard      = GenPrism[PaymentMethod, DebitCard]
+val expirationDate = GenLens[DebitCard](_.expirationDate)
 ```
 
 <br>
@@ -552,7 +565,9 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
 ```
 
 ---
-# Problem #1: Optics creation via macro annotation
+class: medium-code
+
+# Monocle 2 macro annotation
 
 <br>
 
@@ -563,17 +578,22 @@ import monocle.macros.Lenses
 case class User(name: String, address: Address, paymentMethods: Map[String, PaymentMethod])
 
 object User {
-  // @Lenses generate following optics
-  val name          : Optic[User, String] = ...
-  val address       : Optic[User, Address] = ...
-  val paymentMethods: Optic[User, Map[String, PaymentMethod]] = ...
+  // Generated
+  // val name          : Lens[User, String] = ...
+  // val address       : Lens[User, Address] = ...
+  // val paymentMethods: Lens[User, Map[String, PaymentMethod]] = ...
 }
 ```
 
 <br>
 
 .center[
-## Not possible in Scala 3
+.pull-left[
+## Requires IDE specific support
+]
+.pull-right[
+## Doesn't exist in Scala 3
+]
 ]
 
 ---
@@ -592,6 +612,13 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
   ).replace(user, newExpiry)
 ```
 
+<br>
+
+.center[
+## IDE support out of the box
+Thanks to Yilin Wei
+]
+
 ---
 # Monocle 3: Focus macro
 
@@ -608,13 +635,71 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
   ).replace(newExpiry)
 ```
 
---
 <br>
 
 .center[
 ## IDE support out of the box
 Thanks to Yilin Wei
 ]
+
+---
+# Problem 2: Multiple compose methods
+
+<br>
+
+```scala
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  paymentMethods
+    .andThen(index(paymentName))
+    .andThen(debitCard)
+    .andThen(expirationDate)
+    .replace(user, newExpiry)
+```
+
+---
+# Problem 2: Multiple compose methods
+
+<br>
+
+```scala
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  paymentMethods
+    .composeOptional(index(paymentName))
+    .composePrism(debitCard)
+    .composeLens(expirationDate)
+    .replace(user, newExpiry)
+```
+
+.center[
+## Why not overload?
+]
+
+.medium[
+* Monocle [#417](https://github.com/optics-dev/Monocle/issues/417)
+* Inference Driven Design by Michael Pilquist
+]
+
+---
+# Monocle 3: Single compose method
+
+<br>
+
+```scala
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  paymentMethods
+    .andThen(index(paymentName))
+    .andThen(debitCard)
+    .andThen(expirationDate)
+    .replace(user, newExpiry)
+```
+
+## Maybe with infix operator
+
+```scala
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  (paymentMethods >>> index(paymentName) >>> debitCard >>> expirationDate)
+    .replace(user, newExpiry)
+```
 
 ---
 # Summary
@@ -641,7 +726,7 @@ Thanks to Yilin Wei
 
 ### Focus macro
 
-### Single composition method
+### Single compose method
 
 ### class syntax for common composition
 ]
