@@ -89,24 +89,16 @@ case class User(`var` name: String, `var` address: Address)
 case class Address(`var` streetNumber: Int, `var` postCode: String)
 ```
 
+<br>
 
-```scala mdoc
+```scala
 val julien = User("julien", Address(12, "E16 4SR"))
-```
 
-```scala mdoc:reset:invisible
-case class User(var name: String, var address: Address)
-case class Address(var streetNumber: Int, var postCode: String)
-
-val julien = User("julien", Address(12, "E16 4SR"))
-```
-
-```scala mdoc
 julien.address.streetNumber
+// res1: Int = 12
 
 julien.address.streetNumber = 16
-
-julien
+// res2: User = User("julien", Address(`16`, "E16 4SR"))
 ```
 
 ---
@@ -202,10 +194,10 @@ background-image: url(img/diagrams/lightbulb-2.svg)
 ---
 class: center, middle
 
-# How do we copy immutable objects in Scala?
+# How do we copy objects in Scala?
 
 ---
-# Example #1: Simplest case
+# Example #1: Simple case
 
 <br>
 
@@ -236,15 +228,36 @@ julien.copy(address =
 <br>
 
 ```scala mdoc:reset:silent
+import java.time.YearMonth
+
 sealed trait PaymentMethod
 
 case class PayPal(email: String) extends PaymentMethod
 
 case class DebitCard(
   cardNumber     : String,
-  expirationDate : java.time.YearMonth,
+  expirationDate : YearMonth,
   securityCode   : Int
 ) extends PaymentMethod
+```
+
+---
+# Example #2: Enumeration in Dotty
+
+<br>
+
+```scala
+import java.time.YearMonth
+
+enum PaymentMethod {
+  case PayPal(email: String)
+
+  case DebitCard(
+    cardNumber     : String,
+    expirationDate : YearMonth,
+    securityCode   : Int
+  )
+}
 ```
 
 ---
@@ -298,11 +311,13 @@ def updateExpiry(user: User, newExpiry: YearMonth): User =
 // error: value `copy` is not a member of PaymentMethod
 //   user.paymentMethod.copy(expirationDate = newExpiry)
 //   ^^^^^^^^^^^^^^^^^^^^^^^^^
-//
-// error: not found: value `expirationDate`
-//   user.paymentMethod.copy(expirationDate = newExpiry)
-//
 ```
+
+<br>
+
+.center[
+## How do we copy an enumeration?
+]
 
 ---
 # Example #2: Enumeration
@@ -318,6 +333,8 @@ def updateExpiry(user: User, newExpiry: YearMonth): User =
     }
   )
 ```
+
+--
 
 .small-code[
 .pull-left[
@@ -432,44 +449,32 @@ trait Optic[From, To] {
 ```scala mdoc:reset:silent
 trait Optic[From, To] {
 
-  def andThen[Next](optic: Optic[To, Next]): Optic[From, Next]
+  def andThen[Next](other: Optic[To, Next]): Optic[From, Next]
 
 }
 ```
 
-<br>
-
 .center[
-<img src="img/diagrams/optics-composition.svg" alt="Optics composition" style="width:600px;"/>
+<img src="img/diagrams/optics-composition.svg" alt="Optics composition" style="width:800px;"/>
 ]
 
 ---
 class: small-code
 # Optics composition
 
-.pull-right[
-<br>
+.fifty-two-right[
+<br><br><br><br>
 ```scala
-paymentMethods
-  // Optic[User, Map[String, PaymentMethod]]
-.andThen(
-  index("Personal")
-  // Optic[Map[String, PaymentMethod], PaymentMethod]
-).andThen(
-  debitCard
-  // Optic[PaymentMethod, DebitCard]
-).andThen(
-  expirationDate
-  // Optic[Debitcard, YearMonth]
-)
-// Optic[User, YearMonth]
+                              // To:
+paymentMethods                // Map[String, PaymentMethod]
+  .andThen(index("Personal")) // PaymentMethod
+  .andThen(debitCard)         // DebitCard
+  .andThen(expirationDate)    // YearMonth
 ```
 ]
 
 
 <img src="img/diagrams/user-to-expiration-date-2.svg" alt="User to expiration date " style="width:430px;"/>
-
-
 
 ---
 class: center, middle
@@ -517,15 +522,117 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
 ---
 class: medium-code
 
-# Problem #1: Optics creation
+# Problem 1: Multiple compose methods
 
 <br>
 
 ```scala
-val paymentMethods: Optic[User, Map[String, PaymentMethod]] = ...
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  paymentMethods
+    .composeOptional(index(paymentName))
+    .composePrism(debitCard)
+    .composeLens(expirationDate)
+    .replace(user, newExpiry)
+```
+
+## In Monocle 2
+
+```scala
+trait Optic[From, To] {
+  def composeOptional[Next](other: Optional[To, Next]): Optic[From, Next]
+  def composePrism   [Next](other: Prism   [To, Next]): Optic[From, Next]
+  def composeLens    [Next](other: Lens    [To, Next]): Optic[From, Next]
+}
+```
+
+---
+class: medium-code
+
+# Obvious solution: overload
+
+<br>
+
+```scala
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  paymentMethods
+    .andThen(index(paymentName))
+    .andThen(debitCard)
+    .andThen(expirationDate)
+    .replace(user, newExpiry)
+```
+
+<br>
+
+```scala
+trait Optic[From, To] {
+  def andThen[Next](other: Optional[To, Next]): Optic[From, Next]
+  def andThen[Next](other: Prism   [To, Next]): Optic[From, Next]
+  def andThen[Next](other: Lens    [To, Next]): Optic[From, Next]
+}
+```
+
+---
+class: medium-code
+
+# Type Inference Driven Development (TIDD)
+
+<br>
+
+```scala
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  paymentMethods
+    .andThen(index(paymentName)) // break type inference 😞 😢 😭
+    .andThen(debitCard)
+    .andThen(expirationDate)
+    .replace(user, newExpiry)
+```
+
+<br>
+
+.medium[
+* Monocle [#417](https://github.com/optics-dev/Monocle/issues/417)
+* Inference Driven Design (fs2) by Michael Pilquist
+]
+
+---
+class: medium-code
+
+# Monocle 3 thanks to Dotty
+
+<br>
+
+```scala
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  paymentMethods
+    .andThen(index(paymentName))
+    .andThen(debitCard)
+    .andThen(expirationDate)
+    .replace(user, newExpiry)
+```
+
+--
+
+## Maybe with infix operator
+
+```scala
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  (paymentMethods >>> index(paymentName) >>> debitCard >>> expirationDate)
+    .replace(user, newExpiry)
+```
+
+
+---
+class: medium-code
+
+# Problem #2: Optics creation
+
+<br>
+
+```scala
+val paymentMethods     : Optic[User, Map[String, PaymentMethod]] = ...
 def index(name: String): Optic[Map[String, PaymentMethod], PaymentMethod] = ...
-val debitCard: Optic[PaymentMethod, DebitCard] = ...
-val expirationDate: Optic[DebitCard, YearMonth] = ...
+val debitCard          : Optic[PaymentMethod, DebitCard] = ...
+val expirationDate     : Optic[DebitCard, YearMonth] = ...
 ```
 
 <br>
@@ -542,7 +649,7 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
 ---
 class: medium-code
 
-# Problem #1: Optics creation
+# Problem #2: Optics creation
 
 <br>
 
@@ -610,8 +717,6 @@ object User {
 }
 ```
 
-<br>
-
 .center[
 .pull-left[
 ## Requires IDE specific support
@@ -668,65 +773,6 @@ Thanks to Yilin Wei
 ]
 
 ---
-# Problem 2: Multiple compose methods
-
-<br>
-
-```scala
-def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
-  paymentMethods
-    .andThen(index(paymentName))
-    .andThen(debitCard)
-    .andThen(expirationDate)
-    .replace(user, newExpiry)
-```
-
----
-# Problem 2: Multiple compose methods
-
-<br>
-
-```scala
-def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
-  paymentMethods
-    .composeOptional(index(paymentName))
-    .composePrism(debitCard)
-    .composeLens(expirationDate)
-    .replace(user, newExpiry)
-```
-
-.center[
-## Why not overload?
-]
-
-.medium[
-* Monocle [#417](https://github.com/optics-dev/Monocle/issues/417)
-* Inference Driven Design by Michael Pilquist
-]
-
----
-# Monocle 3: Single compose method
-
-<br>
-
-```scala
-def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
-  paymentMethods
-    .andThen(index(paymentName))
-    .andThen(debitCard)
-    .andThen(expirationDate)
-    .replace(user, newExpiry)
-```
-
-## Maybe with infix operator
-
-```scala
-def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
-  (paymentMethods >>> index(paymentName) >>> debitCard >>> expirationDate)
-    .replace(user, newExpiry)
-```
-
----
 # Summary
 
 <br>
@@ -737,9 +783,9 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
 
 <br>
 
-### Boiler plate when generating optics
-
 ### Boiler plate when composing optics
+
+### Boiler plate when generating optics
 
 ### Difficult to discover optics
 ]
@@ -749,9 +795,9 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
 
 <br>
 
-### Focus macro
+### Single composition method
 
-### Single compose method
+### Focus macro
 
 ### class syntax for common composition
 ]
