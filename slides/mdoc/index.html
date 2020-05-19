@@ -55,9 +55,9 @@ class: center, middle, white
 .large-right[<br>
 ## Backend Scala developer
 
-## Maintainer of Monocle 🧐
+## Author of a Scala FP course: Foundations
 
-## Author of Scala FP courses at fp-tower
+## Maintainer of Monocle 🧐
 ]
 
 ---
@@ -190,6 +190,9 @@ background-image: url(img/diagrams/lightbulb-1.svg)
 
 ---
 background-image: url(img/diagrams/lightbulb-2.svg)
+
+---
+background-image: url(img/diagrams/lightbulb-3.svg)
 
 ---
 class: center, middle
@@ -465,7 +468,7 @@ class: small-code
 .fifty-two-right[
 <br><br><br><br>
 ```scala
-                              // To:
+                              // User
 paymentMethods                // Map[String, PaymentMethod]
   .andThen(index("Personal")) // PaymentMethod
   .andThen(debitCard)         // DebitCard
@@ -773,6 +776,222 @@ Thanks to Yilin Wei
 ]
 
 ---
+# Problem 3: Lawfulness
+
+.center[
+<img src="img/police.jpg" alt="Police" style="width:500px;"/>
+]
+
+---
+class: medium-code
+
+# Expected behaviour of an interface
+
+<br>
+
+```scala
+trait Optic[From, To] {
+  def get(from: From): To
+  def replace(from: From, newTo: To): From
+  def modify(from: From, update: To => To): From
+}
+```
+
+<br>
+
+```scala
+val nameOptic: Optic[User, String] = ...
+
+test("get after replace"){
+  forAll{ (user: User, newName: String) =>
+    val updatedUser = nameOptic.replace(user, newName)
+    nameOptic.get(updatedUser) shouldEqual newName
+  }
+}
+```
+
+---
+class: medium-code
+
+# Expected behaviour of an interface
+
+<br>
+
+```scala
+trait Optic[From, To] {
+  def get(from: From): To
+  def replace(from: From, newTo: To): From
+  def modify(from: From, update: To => To): From
+}
+```
+
+
+```scala
+val nameOptic: Optic[User, String] = ...
+
+test("modify fusion"){
+  forAll{ (user: User, update1: String => String, update2: String => String) =>
+    val step1 = nameOptic.modify(user , update1)
+    val step2 = nameOptic.modify(step1, update2)
+
+    val both  = nameOptic.modify(user , update1 andThen update2)
+
+    step2 shouldEqual both
+  }
+}
+```
+
+---
+# FP library design principle
+
+<br>
+
+## When using a constructor, you need to verify the behaviour
+
+```scala
+val nameOptic = Optic[User, String](_.name, (newName, user) => user.copy(name = newName))
+```
+
+<br>
+
+## When using a combinator, you DON'T need to check the behaviour
+
+```scala
+address andThen streetNumber
+```
+
+---
+class: medium-code
+
+# FP libraries only offer safe combinators
+
+<br>
+
+```scala
+val julien = User(
+  "Julien",
+  Address(12, "E16 4SR"),
+  Map(
+    "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(2022, 7), 732),
+    "Personal" -> DebitCard("4568 1234 4444 5555", YearMonth.of(2020, 1), 995)
+  )
+)
+
+julien.focus(_.paymentMethods
+  .*
+  .as[DebitCard]
+  .filter(_.expirationDate.atEndOfMonth.isAfter(LocalDate.now))
+  .cardNumber
+).getAll
+// res: List[String] = List("4568 8980 2376 5431")
+```
+
+---
+class: medium-code
+
+# FP libraries only offer safe combinators
+
+<br>
+
+```scala
+val julien = User(
+  "Julien",
+  Address(12, "E16 4SR"),
+  Map(
+    "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(2022, 7), 732),
+    "Personal" -> DebitCard("4568 1234 4444 5555", YearMonth.of(2020, 1), 995)
+  )
+)
+
+julien.focus(_.paymentMethods
+  .*
+  .as[DebitCard]
+  .filter(_.expirationDate.atEndOfMonth.isAfter(LocalDate.now)) // ❌ break the laws!!!
+  .cardNumber
+).getAll
+// res: List[String] = List("4568 8980 2376 5431")
+```
+
+---
+class: medium-code
+
+# FP libraries only offer safe combinators
+
+<br>
+
+```scala
+val optic = Focus[User](_.paymentMethods
+  .*
+  .as[DebitCard]
+  .filter(_.expirationDate.atEndOfMonth.isAfter(LocalDate.now))
+  .expirationDate
+)
+
+val updated = optic.modify(julien, _.minusYears(2))
+// updated: User = User(
+//  "Julien",
+//  Address(12, "E16 4SR"),
+//  Map(
+//    "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(`2020`, 7), 732),
+//    "Personal" -> DebitCard("4568 1234 4444 5555", YearMonth.of(2020, 1), 995)
+//  )
+//)
+```
+
+---
+class: medium-code
+
+# FP libraries only offer safe combinators
+
+<br>
+
+```scala
+val optic = Focus[User](_.paymentMethods
+  .*
+  .as[DebitCard]
+  .filter(_.expirationDate.atEndOfMonth.isAfter(LocalDate.now))
+  .expirationDate
+)
+
+val updated1 = optic.modify(julien  , _.minusYears(2))
+val updated2 = optic.modify(updated1, _.plusYears(2))
+// updated2: User = User(
+//  "Julien",
+//  Address(12, "E16 4SR"),
+//  Map(
+//    "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(`2020`, 7), 732),
+//    "Personal" -> DebitCard("4568 1234 4444 5555", YearMonth.of(2020, 1), 995)
+//  )
+//)
+```
+
+---
+class: medium-code
+
+# Filter breaks fusion property (in some cases)
+
+<br>
+
+```scala
+val optic = Focus[User](_.paymentMethods
+  .*
+  .as[DebitCard]
+  .filter(_.expirationDate.atEndOfMonth.isAfter(LocalDate.now))
+  .expirationDate
+)
+
+val updated = optic.modify(julien, _.minusYears(2).plusYears(2))
+// updated: User = User(
+//  "Julien",
+//  Address(12, "E16 4SR"),
+//  Map(
+//    "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(`2022`, 7), 732),
+//    "Personal" -> DebitCard("4568 1234 4444 5555", YearMonth.of(2020, 1), 995)
+//  )
+//)
+```
+
+---
 # Summary
 
 <br>
@@ -787,7 +1006,7 @@ Thanks to Yilin Wei
 
 ### Boiler plate when generating optics
 
-### Difficult to discover optics
+### Lawful at all cost
 ]
 
 .pull-right[
@@ -799,7 +1018,7 @@ Thanks to Yilin Wei
 
 ### Focus macro
 
-### class syntax for common composition
+### Offer powerful combinators <br> (maybe dangerous)
 ]
 ]
 
