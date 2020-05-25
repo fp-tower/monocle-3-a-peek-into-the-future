@@ -69,7 +69,7 @@ class: center, middle, white
 
 ## 1. Why optics?
 
-## 2. Current state of Monocle
+## 2. Current issues with Monocle
 
 ## 3. The future with Dotty/Scala 3
 
@@ -103,11 +103,11 @@ julien.address.streetNumber = 16
 
 <br>
 
-## 1. Easier to test
+## 1. Share data without risk
 
-## 2. Share data without risk
+## 2. Free features: versioning, rollback
 
-## 3. Free features: versioning, rollback
+## 3. Easier to test
 
 ## 4. Concurrency
 
@@ -565,8 +565,6 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
     .replace(user, newExpiry)
 ```
 
---
-
 ## Maybe with infix operator
 
 ```scala
@@ -822,20 +820,21 @@ class: medium-code
 ```scala
 val julien = User(
   "Julien",
-  Address(12, "E16 4SR"),
+  Address(12, "E16 4SR", "UK"),
   Map(
     "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(2022, 7), 732),
-    "Personal" -> DebitCard("4568 1234 4444 5555", YearMonth.of(2020, 1), 995)
+    "Personal" -> DebitCard("4568 1234 4444 5555", YearMonth.of(2020, 1), 995),
+    "FX"       -> PayPal("julien@fp-tower.com")
   )
 )
 
-julien.focus(_.paymentMethods
+julien.focus(_.filter(_.address.country == "UK")
+  .paymentMethods
   .*
   .as[DebitCard]
-  .filter(_.expirationDate.atEndOfMonth.isAfter(LocalDate.now))
   .cardNumber
 ).getAll
-// res: List[String] = List("4568 8980 2376 5431")
+// res: List[String] = List("4568 8980 2376 5431", "4568 1234 4444 5555")
 ```
 
 ---
@@ -848,17 +847,45 @@ class: medium-code
 ```scala
 val julien = User(
   "Julien",
-  Address(12, "E16 4SR"),
+  Address(12, "95350", `"France"`),
   Map(
     "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(2022, 7), 732),
-    "Personal" -> DebitCard("4568 1234 4444 5555", YearMonth.of(2020, 1), 995)
+    "Personal" -> DebitCard("4568 1234 4444 5555", YearMonth.of(2020, 1), 995),
+    "FX"       -> PayPal("julien@fp-tower.com")
+  )
+)
+
+julien.focus(_.filter(_.address.country == "UK")
+  .paymentMethods
+  .*
+  .as[DebitCard]
+  .cardNumber
+).getAll
+// res: List[String] = `List()`
+```
+
+---
+class: medium-code
+
+# FP libraries only offer safe combinators
+
+<br>
+
+```scala
+val julien = User(
+  "Julien",
+  Address(12, "E16 4SR", "UK"),
+  Map(
+    "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(2022, 7), 732),
+    "Personal" -> DebitCard("4568 1234 4444 5555", YearMonth.of(2020, 1), 995),
+    "FX"       -> PayPal("julien@fp-tower.com")
   )
 )
 
 julien.focus(_.paymentMethods
   .*
   .as[DebitCard]
-  .filter(_.expirationDate.atEndOfMonth.isAfter(LocalDate.now)) // ❌ break the laws!!!
+  .filter(_.expirationDate.isAfter(YearMonth.of(2020, 5))) // ❌ break the laws!!!
   .cardNumber
 ).getAll
 // res: List[String] = List("4568 8980 2376 5431")
@@ -875,17 +902,18 @@ class: medium-code
 val optic = Focus[User](_.paymentMethods
   .*
   .as[DebitCard]
-  .filter(_.expirationDate.atEndOfMonth.isAfter(LocalDate.now))
+  .filter(_.expirationDate.isAfter(YearMonth.of(2020, 5)))
   .expirationDate
 )
 
 val updated = optic.modify(julien, _.minusYears(2))
 // updated: User = User(
 //  "Julien",
-//  Address(12, "E16 4SR"),
+//  Address(12, "E16 4SR", "UK"),
 //  Map(
-//    "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(`2020`, 7), 732),
-//    "Personal" -> DebitCard("4568 1234 4444 5555", YearMonth.of(2020, 1), 995)
+//    "Business" -> DebitCard("4568 8980 2376 5431", `2020-07`, 732),
+//    "Personal" -> DebitCard("4568 1234 4444 5555", 2020-01, 995),
+//    "FX"       -> PayPal("julien@fp-tower.com")
 //  )
 //)
 ```
@@ -901,18 +929,19 @@ class: medium-code
 val optic = Focus[User](_.paymentMethods
   .*
   .as[DebitCard]
-  .filter(_.expirationDate.atEndOfMonth.isAfter(LocalDate.now))
+  .filter(_.expirationDate.isAfter(YearMonth.of(2020, 5)))
   .expirationDate
 )
 
 val updated1 = optic.modify(julien  , _.minusYears(2))
-val updated2 = optic.modify(updated1, _.plusYears(2))
+val updated2 = optic.modify(updated1, _.plusMonths(3))
 // updated2: User = User(
 //  "Julien",
-//  Address(12, "E16 4SR"),
+//  Address(12, "E16 4SR", "UK"),
 //  Map(
-//    "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(`2020`, 7), 732),
-//    "Personal" -> DebitCard("4568 1234 4444 5555", YearMonth.of(2020, 1), 995)
+//    "Business" -> DebitCard("4568 8980 2376 5431", `2020-07`, 732),
+//    "Personal" -> DebitCard("4568 1234 4444 5555", 2020-01, 995),
+//    "FX"       -> PayPal("julien@fp-tower.com")
 //  )
 //)
 ```
@@ -928,17 +957,18 @@ class: medium-code
 val optic = Focus[User](_.paymentMethods
   .*
   .as[DebitCard]
-  .filter(_.expirationDate.atEndOfMonth.isAfter(LocalDate.now))
+  .filter(_.expirationDate.isAfter(YearMonth.of(2020, 5)))
   .expirationDate
 )
 
-val updated = optic.modify(julien, _.minusYears(2).plusYears(2))
+val updated = optic.modify(julien, _.minusYears(2).plusMonths(3))
 // updated: User = User(
 //  "Julien",
-//  Address(12, "E16 4SR"),
+//  Address(12, "E16 4SR", "UK"),
 //  Map(
-//    "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(`2022`, 7), 732),
-//    "Personal" -> DebitCard("4568 1234 4444 5555", YearMonth.of(2020, 1), 995)
+//    "Business" -> DebitCard("4568 8980 2376 5431", `2022-10`, 732),
+//    "Personal" -> DebitCard("4568 1234 4444 5555", 2020-01, 995),
+//    "FX"       -> PayPal("julien@fp-tower.com")
 //  )
 //)
 ```
