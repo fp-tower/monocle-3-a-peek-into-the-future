@@ -974,8 +974,120 @@ val updated = optic.modify(julien, _.minusYears(2).plusMonths(3))
 ```
 
 ---
-# Summary
+class: center, middle
 
+# Monocle 3 will be less strict and <br> offer powerful combinators (maybe dangerous)
+
+---
+class: medium-code
+
+# Problem 4: Custom errors
+
+<br>
+
+```scala
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  user.copy(paymentMethods =
+    user.paymentMethods.get(paymentName) match {
+      case None                    => user.paymentMethods
+      case Some(paypal: PayPal)    => user.paymentMethods
+      case Some(card  : DebitCard) =>
+        val updatedCard = card.copy(expirationDate = newExpiry)
+        user.paymentMethods.updated(paymentName, updatedCard)
+    }
+  )
+```
+
+```scala
+def expiryOptic(paymentName: String): Optic[User, YearMonth] =
+  paymentMethods
+    .andThen(index(paymentName))
+    .andThen(debitCard)
+    .andThen(expirationDate)
+```
+
+---
+class: medium-code
+
+# Monocle 2 uses Option
+
+<br>
+
+```scala
+val julien = User(
+  "Julien",
+  Address(12, "E16 4SR", "UK"),
+  Map(
+    "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(2022, 7), 732),
+    "Personal" -> DebitCard("4568 1234 4444 5555", YearMonth.of(2020, 1), 995),
+    "FX"       -> PayPal("julien@fp-tower.com")
+  )
+)
+```
+
+.pull-left[
+```scala
+expiryOptic("Personal").get(julien)
+// res: Option[YearMonth] = Some(2020-01)
+
+expiryOptic("FX").get(julien)
+// res: Option[YearMonth] = None
+
+expiryOptic("Other").get(julien)
+// res: Option[YearMonth] = None
+```
+]
+
+.pull-right[.center[
+<br>
+## Same for replace, modify
+]]
+
+---
+class: medium-code
+
+# Monocle 3 uses Either and union types
+
+<br>
+
+```scala
+val julien = User(
+  "Julien",
+  Address(12, "E16 4SR", "UK"),
+  Map(
+    "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(2022, 7), 732),
+    "Personal" -> DebitCard("4568 1234 4444 5555", YearMonth.of(2020, 1), 995),
+    "FX"       -> PayPal("julien@fp-tower.com")
+  )
+)
+```
+
+.large-left[
+```scala
+expiryOptic("Personal").get(julien)
+// res = Right(2020-01)
+
+expiryOptic("FX").get(julien)
+// res = Left(Expected DebitCard but got Paypal)
+
+expiryOptic("Other").get(julien)
+// res = Left(NoSuchElementException: key not found: Other)
+```
+]
+
+.medium-right[
+<br>
+```scala
+Either[
+  String | NoSuchElementException,
+  YearMonth
+]
+```
+]
+
+---
+
+<br>
 <br>
 
 .center[
@@ -989,6 +1101,8 @@ val updated = optic.modify(julien, _.minusYears(2).plusMonths(3))
 ### Boiler plate when generating optics
 
 ### Lawful at all cost
+
+### Errors are limited to Option
 ]
 
 .pull-right[
@@ -1000,7 +1114,9 @@ val updated = optic.modify(julien, _.minusYears(2).plusMonths(3))
 
 ### Focus macro
 
-### Offer powerful combinators <br> (maybe dangerous)
+### Offer powerful combinators (dangerous)
+
+### Custom errors
 ]
 ]
 
