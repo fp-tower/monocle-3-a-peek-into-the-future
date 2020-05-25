@@ -247,25 +247,6 @@ case class DebitCard(
 ```
 
 ---
-# Example #2: Enumeration in Dotty
-
-<br>
-
-```scala
-import java.time.YearMonth
-
-enum PaymentMethod {
-  case PayPal(email: String)
-
-  case DebitCard(
-    cardNumber     : String,
-    expirationDate : YearMonth,
-    securityCode   : Int
-  )
-}
-```
-
----
 # Example #2: Enumeration
 
 <br>
