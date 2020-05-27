@@ -273,6 +273,19 @@ val anna = User("Anna", Address(10, "EC2M 7EB"), PayPal("anna@fp-tower.com"))
 
 <br>
 
+```scala
+def updateExpiry(user: User, newExpiry: YearMonth): User =
+  user.copy(paymentMethod =
+    user.paymentMethod.copy(expirationDate = newExpiry)
+  )
+```
+
+
+---
+# Example #2: Enumeration
+
+<br>
+
 ```scala mdoc:invisible:fail
 def updateExpiry(user: User, newExpiry: YearMonth): User =
   user.copy(paymentMethod =
@@ -297,6 +310,21 @@ def updateExpiry(user: User, newExpiry: YearMonth): User =
 .center[
 ## How do we copy an enumeration?
 ]
+
+---
+# Example #2: Enumeration
+
+<br>
+
+```scala
+def updateExpiry(user: User, newExpiry: YearMonth): User =
+  user.copy(paymentMethod =
+    user.paymentMethod match {
+      case card  : DebitCard => card.copy(expirationDate = newExpiry)
+      case paypal: PayPal    => ???
+    }
+  )
+```
 
 ---
 # Example #2: Enumeration
@@ -846,7 +874,7 @@ val julien = User(
   "Julien",
   Address(12, "E16 4SR", "UK"),
   Map(
-    "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(2022, 7), 732),
+    "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(2022, 3), 732),
     "Personal" -> DebitCard("4568 1234 4444 5555", YearMonth.of(2020, 1), 995),
     "FX"       -> PayPal("julien@fp-tower.com")
   )
@@ -857,7 +885,7 @@ julien.focus(_.filter(_.address.country == "UK")
   .*
   .as[DebitCard]
   .cardNumber
-).getAll
+).get
 // res: List[String] = List("4568 8980 2376 5431", "4568 1234 4444 5555")
 ```
 
@@ -873,7 +901,7 @@ val julien = User(
   "Julien",
   Address(12, "95350", `"France"`),
   Map(
-    "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(2022, 7), 732),
+    "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(2022, 3), 732),
     "Personal" -> DebitCard("4568 1234 4444 5555", YearMonth.of(2020, 1), 995),
     "FX"       -> PayPal("julien@fp-tower.com")
   )
@@ -884,7 +912,7 @@ julien.focus(_.filter(_.address.country == "UK")
   .*
   .as[DebitCard]
   .cardNumber
-).getAll
+).get
 // res: List[String] = `List()`
 ```
 
@@ -900,7 +928,7 @@ val julien = User(
   "Julien",
   Address(12, "E16 4SR", "UK"),
   Map(
-    "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(2022, 7), 732),
+    "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(2022, 3), 732),
     "Personal" -> DebitCard("4568 1234 4444 5555", YearMonth.of(2020, 1), 995),
     "FX"       -> PayPal("julien@fp-tower.com")
   )
@@ -911,7 +939,7 @@ julien.focus(_.paymentMethods
   .as[DebitCard]
   .filter(_.expirationDate.isAfter(YearMonth.of(2020, 5))) // ❌ break the laws!!!
   .cardNumber
-).getAll
+).get
 // res: List[String] = List("4568 8980 2376 5431")
 ```
 
@@ -935,7 +963,7 @@ val updated = optic.modify(julien, _.minusYears(2))
 //  "Julien",
 //  Address(12, "E16 4SR", "UK"),
 //  Map(
-//    "Business" -> DebitCard("4568 8980 2376 5431", `2020-07`, 732),
+//    "Business" -> DebitCard("4568 8980 2376 5431", `2020-03`, 732),
 //    "Personal" -> DebitCard("4568 1234 4444 5555", 2020-01, 995),
 //    "FX"       -> PayPal("julien@fp-tower.com")
 //  )
@@ -963,7 +991,7 @@ val updated2 = optic.modify(updated1, _.plusMonths(3))
 //  "Julien",
 //  Address(12, "E16 4SR", "UK"),
 //  Map(
-//    "Business" -> DebitCard("4568 8980 2376 5431", `2020-07`, 732),
+//    "Business" -> DebitCard("4568 8980 2376 5431", `2020-03`, 732),
 //    "Personal" -> DebitCard("4568 1234 4444 5555", 2020-01, 995),
 //    "FX"       -> PayPal("julien@fp-tower.com")
 //  )
@@ -990,7 +1018,7 @@ val updated = optic.modify(julien, _.minusYears(2).plusMonths(3))
 //  "Julien",
 //  Address(12, "E16 4SR", "UK"),
 //  Map(
-//    "Business" -> DebitCard("4568 8980 2376 5431", `2020-10`, 732),
+//    "Business" -> DebitCard("4568 8980 2376 5431", `2020-06`, 732),
 //    "Personal" -> DebitCard("4568 1234 4444 5555", 2020-01, 995),
 //    "FX"       -> PayPal("julien@fp-tower.com")
 //  )
@@ -1199,10 +1227,18 @@ Either[
 
 ---
 background-image: url(img/fp-tower/website-background.svg)
+# .white[Come to the dark side we have stickers]
 
-class: center, middle, white
+<br>
+.center[
+.pull-left[
+<img src="img/monocle-sticker-blue.png" alt="Monocle blue sticker" style="width:300px;"/>
+]
 
-.title[Thank you,<br>Any questions?]
+.pull-right[
+<img src="img/monocle-sticker-white.png" alt="Monocle blue sticker" style="width:300px;"/>
+]
+]
 
  </textarea>
     <script src="https://remarkjs.com/downloads/remark-latest.min.js">
