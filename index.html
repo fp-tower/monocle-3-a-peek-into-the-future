@@ -862,9 +862,9 @@ julien.focus(_.filter(_.address.country == "UK")
   .paymentMethods
   .*
   .as[DebitCard]
-  .cardNumber
+  .expirationDate
 ).get
-// res: List[String] = List("4568 8980 2376 5431", "4568 1234 4444 5555")
+// res: List[YearMonth] = List(2022-03, 2020-01)
 ```
 
 ---
@@ -889,9 +889,9 @@ julien.focus(_.filter(_.address.country == "UK")
   .paymentMethods
   .*
   .as[DebitCard]
-  .cardNumber
+  .expirationDate
 ).get
-// res: List[String] = `List()`
+// res: List[YearMonth] = `List()`
 ```
 
 ---
@@ -915,10 +915,10 @@ val julien = User(
 julien.focus(_.paymentMethods
   .*
   .as[DebitCard]
-  .filter(_.expirationDate.isAfter(YearMonth.of(2020, 5))) // ❌ break the laws!!!
-  .cardNumber
+  .filter(_.expirationDate.isAfter(YearMonth.of(2020, 5))) // ❌ break the contract!!!
+  .expirationDate
 ).get
-// res: List[String] = List("4568 8980 2376 5431")
+// res: List[YearMonth] = List(`2022-03`)
 ```
 
 ---
@@ -1007,6 +1007,113 @@ val updated = optic.modify(julien, _.minusYears(2).plusMonths(3))
 class: center, middle
 
 # Monocle 3 will be less strict and <br> offer powerful combinators (maybe dangerous)
+
+---
+
+<br><br><br>
+
+.center[
+.pull-left[
+# Monocle 2
+
+<br>
+
+### Boiler plate when composing optics
+
+### Boiler plate when generating optics
+
+### Lawful at all cost
+]
+
+.pull-right[
+# Monocle 3
+
+<br>
+
+### Single composition method
+
+### Focus macro
+
+### Offer powerful combinators (dangerous)
+
+### And much more...
+]
+]
+
+---
+# Join the team
+
+ <br><br><br>
+
+ <div class="row">
+  <div class="column">
+    <div class="card">
+      <img src="img/CarlosQuiroz.png" alt="Carlos Quiroz" style="width:100%">
+      <div class="container">
+        <h3>Carlos Quiroz</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="column">
+    <div class="card">
+      <img src="img/fp-tower/julien-truffaut-square.png" alt="Julien Truffaut" style="width:100%"/>
+      <div class="container">
+        <h3>Julien Truffaut</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="column">
+    <div class="card">
+      <img src="img/YilinWei.png" alt="Yilin Wei" style="width:100%">
+      <div class="container">
+        <h3>Yilin Wei</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="column">
+    <div class="card">
+      <img src="img/KenjiYoshida.png" alt="Kenji Yoshida" style="width:100%">
+      <div class="container">
+        <h3>Kenji Yoshida</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="column">
+    <div class="card">
+      <img src="img/question-mark-profile.png" alt="You" style="width:100%">
+      <div class="container">
+        <h3>Yourself</h3>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+---
+background-image: url(img/fp-tower/website-background.svg)
+# .white[Come to the dark side we have stickers]
+
+<br>
+.center[
+.pull-left[
+<img src="img/monocle-sticker-blue.png" alt="Monocle blue sticker" style="width:300px;"/>
+]
+
+.pull-right[
+<img src="img/monocle-sticker-white.png" alt="Monocle blue sticker" style="width:300px;"/>
+]
+]
+
+---
+background-image: url(img/fp-tower/website-background.svg)
+
+class: center, middle, white
+
+.title[Thank you,<br>Any questions?]
 
 ---
 class: medium-code
@@ -1113,109 +1220,6 @@ Either[
   YearMonth
 ]
 ```
-]
-
----
-
-<br>
-<br>
-
-.center[
-.pull-left[
-# Monocle 2
-
-<br>
-
-### Boiler plate when composing optics
-
-### Boiler plate when generating optics
-
-### Lawful at all cost
-
-### Errors are limited to Option
-]
-
-.pull-right[
-# Monocle 3
-
-<br>
-
-### Single composition method
-
-### Focus macro
-
-### Offer powerful combinators (dangerous)
-
-### Custom errors
-]
-]
-
----
-# Join the team
-
- <br><br><br>
-
- <div class="row">
-  <div class="column">
-    <div class="card">
-      <img src="img/CarlosQuiroz.png" alt="Carlos Quiroz" style="width:100%">
-      <div class="container">
-        <h3>Carlos Quiroz</h3>
-      </div>
-    </div>
-  </div>
-
-  <div class="column">
-    <div class="card">
-      <img src="img/fp-tower/julien-truffaut-square.png" alt="Julien Truffaut" style="width:100%"/>
-      <div class="container">
-        <h3>Julien Truffaut</h3>
-      </div>
-    </div>
-  </div>
-
-  <div class="column">
-    <div class="card">
-      <img src="img/YilinWei.png" alt="Yilin Wei" style="width:100%">
-      <div class="container">
-        <h3>Yilin Wei</h3>
-      </div>
-    </div>
-  </div>
-
-  <div class="column">
-    <div class="card">
-      <img src="img/KenjiYoshida.png" alt="Kenji Yoshida" style="width:100%">
-      <div class="container">
-        <h3>Kenji Yoshida</h3>
-      </div>
-    </div>
-  </div>
-
-  <div class="column">
-    <div class="card">
-      <img src="img/question-mark-profile.png" alt="You" style="width:100%">
-      <div class="container">
-        <h3>Yourself</h3>
-      </div>
-    </div>
-  </div>
-
-</div>
-
----
-background-image: url(img/fp-tower/website-background.svg)
-# .white[Come to the dark side we have stickers]
-
-<br>
-.center[
-.pull-left[
-<img src="img/monocle-sticker-blue.png" alt="Monocle blue sticker" style="width:300px;"/>
-]
-
-.pull-right[
-<img src="img/monocle-sticker-white.png" alt="Monocle blue sticker" style="width:300px;"/>
-]
 ]
 
  </textarea>
