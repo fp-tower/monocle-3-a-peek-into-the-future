@@ -982,7 +982,7 @@ object User {
 ]]
 
 ---
-# Solution: Focus macro (Scala 3)
+# Solution: Focus macro
 
 <br>
 
@@ -1006,133 +1006,24 @@ Focus[User](_.paymentMethods.*.expirationDate)
 ]
 
 ---
+class: medium-code
+
 # Problem 2: Discoverability
 
----
-# Monocle 3: Focus macro
-
 <br>
 
 ```scala
-import monocle.Focus
-
-def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
-  user.focus(_
-    .paymentMethods
-    .index(paymentName)
-    .as[DebitCard]
-    .expirationDate
-  ).replace(newExpiry)
+val optContactDetailsOptic: Optic[State, Map[Country, PaymentMethod]] = ...
 ```
-
-<br>
-
-.center[
-## IDE support out of the box
-Thanks to Yilin Wei
-]
-
----
-class: medium-code
-
-# Problem 1: Multiple compose methods
-
 <br>
 
 ```scala
-def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
-  paymentMethods
-    .`composeOptional`(index(paymentName))
-    .`composePrism`(debitCard)
-    .`composeLens`(expirationDate)
-    .replace(user, newExpiry)
+case class ContactDetails(name: String, address: Address, ...)
+
+case class Address(streetNumber: Int, postCode: String)
 ```
 
-## In Monocle 2
-
-```scala
-trait Optic[From, To] {
-  def compose`Optional`[Next](other: `Optional`[To, Next]): Optic[From, Next]
-  def compose`Prism`   [Next](other: `Prism`   [To, Next]): Optic[From, Next]
-  def compose`Lens`    [Next](other: `Lens`    [To, Next]): Optic[From, Next]
-}
-```
-
----
-class: medium-code
-
-# Obvious solution: overload
-
-<br>
-
-```scala
-def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
-  paymentMethods
-    .andThen(index(paymentName))
-    .andThen(debitCard)
-    .andThen(expirationDate)
-    .replace(user, newExpiry)
-```
-
-<br>
-
-```scala
-trait Optic[From, To] {
-  def andThen[Next](other: Optional[To, Next]): Optic[From, Next]
-  def andThen[Next](other: Prism   [To, Next]): Optic[From, Next]
-  def andThen[Next](other: Lens    [To, Next]): Optic[From, Next]
-}
-```
-
----
-class: medium-code
-
-# Type Inference Driven Development (TIDD)
-
-<br>
-
-```scala
-def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
-  paymentMethods
-    .andThen(index(paymentName)) // break type inference 😞 😢 😭
-    .andThen(debitCard)
-    .andThen(expirationDate)
-    .replace(user, newExpiry)
-```
-
-<br>
-
-.medium[
-* Monocle [#417](https://github.com/optics-dev/Monocle/issues/417)
-* Inference Driven Design (fs2) by Michael Pilquist
-]
-
----
-class: medium-code
-
-# Monocle with Scala 3
-
-<br>
-
-```scala
-def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
-  paymentMethods
-    .andThen(index(paymentName))
-    .andThen(debitCard)
-    .andThen(expirationDate)
-    .replace(user, newExpiry)
-```
-
---
-
-## Maybe with infix operator
-
-```scala
-def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
-  (paymentMethods `>>>` index(paymentName) `>>>` debitCard `>>>` expirationDate)
-    .replace(user, newExpiry)
-```
-
+// TODO talk about .some, .each, add javadoc pic
 
 ---
 # Problem 3: Lawfulness
@@ -1442,36 +1333,17 @@ class: center, middle
 # Monocle 3 will be less strict and <br> offer powerful combinators (maybe dangerous)
 
 ---
-
-<br><br><br>
-
-.center[
-.forty-seven-left[
-# Monocle 2
+# Monocle 3: Focus on usability
 
 <br>
 
-### Boiler plate when composing optics
+## Almighty Focus macro
 
-### Boiler plate when generating optics
+## Dedicated methods for common composition (some, each, index)
 
-### Lawful at all cost
-]
+## New powerful combinators (filter, withDefault)
 
-.forty-seven-right[
-# Monocle 3
-
-<br>
-
-### Single composition method
-
-### Focus macro
-
-### Offer powerful combinators (dangerous)
-
-### And much more...
-]
-]
+## And much more...
 
 ---
 # Join the team
@@ -1549,111 +1421,28 @@ class: center, middle, white
 .title[Thank you,<br>Any questions?]
 
 ---
-class: medium-code
-
-# Problem 4: Custom errors
+# Foundations of Functional Programming in Scala
 
 <br>
 
-```scala
-def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
-  user.copy(paymentMethods =
-    user.paymentMethods.get(paymentName) match {
-      case None                    => user.paymentMethods
-      case Some(paypal: PayPal)    => user.paymentMethods
-      case Some(card  : DebitCard) =>
-        val updatedCard = card.copy(expirationDate = newExpiry)
-        user.paymentMethods.updated(paymentName, updatedCard)
-    }
-  )
-```
+## Self-paced online course
 
-```scala
-def expiryOptic(paymentName: String): Optic[User, YearMonth] =
-  paymentMethods
-    .andThen(index(paymentName))
-    .andThen(debitCard)
-    .andThen(expirationDate)
-```
+## Practical side of Functional Programming
+
+## No prerequisites other than basic Scala syntax
+
+## Early Access Program: ~40% content available
 
 ---
-class: medium-code
+background-image: url(img/fp-tower/website-background.svg)
 
-# Monocle 2 uses Option
+class: center, middle, white
 
-<br>
+# .white[www.fp-tower.com/courses/foundations]
 
-```scala
-val julien = User(
-  "Julien",
-  Address(12, "E16 4SR", "UK"),
-  Map(
-    "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(2022, 7), 732),
-    "Personal" -> DebitCard("4568 1234 4444 5555", YearMonth.of(2020, 1), 995),
-    "FX"       -> PayPal("julien@fp-tower.com")
-  )
-)
-```
+.title[Coupon: SBTB15]
+## .white[15% discount until 19th of November]
 
-.forty-seven-left[
-```scala
-expiryOptic("Personal").get(julien)
-// res: Option[YearMonth] = Some(2020-01)
-
-expiryOptic("FX").get(julien)
-// res: Option[YearMonth] = None
-
-expiryOptic("Other").get(julien)
-// res: Option[YearMonth] = None
-```
-]
-
-.forty-seven-right[.center[
-<br>
-## Same for replace, modify
-]]
-
----
-class: medium-code
-
-# Monocle 3 uses Either and union types
-
-<br>
-
-```scala
-val julien = User(
-  "Julien",
-  Address(12, "E16 4SR", "UK"),
-  Map(
-    "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(2022, 7), 732),
-    "Personal" -> DebitCard("4568 1234 4444 5555", YearMonth.of(2020, 1), 995),
-    "FX"       -> PayPal("julien@fp-tower.com")
-  )
-)
-```
-
-.fifty-seven-left[
-```scala
-expiryOptic("Personal").get(julien)
-// res = Right(2020-01)
-
-expiryOptic("FX").get(julien)
-// res = Left(Expected DebitCard but got Paypal)
-
-expiryOptic("Other").get(julien)
-// res = Left(NoSuchElementException: key not found: Other)
-```
-]
-
-.thirty-seven-right[
-<br>
-```scala
-Either[
-  String | NoSuchElementException,
-  YearMonth
-]
-```
-]
 
  </textarea>
     <script src="https://remarkjs.com/downloads/remark-latest.min.js">
