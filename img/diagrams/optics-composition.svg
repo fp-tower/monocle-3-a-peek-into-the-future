@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xl="http://www.w3.org/1999/xlink" xmlns:dc="http://purl.org/dc/elements/1.1/" version="1.1" viewBox="0 0 577 172" width="577" height="172">
+<svg xmlns:dc="http://purl.org/dc/elements/1.1/" version="1.1" xmlns:xl="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 577 172" width="577" height="172">
   <defs>
     <marker orient="auto" overflow="visible" markerUnits="strokeWidth" id="FilledArrow_Marker" stroke-linejoin="miter" stroke-miterlimit="10" viewBox="-1 -2 5 4" markerWidth="5" markerHeight="4" color="#70a3d8">
       <g>
@@ -13,13 +13,11 @@
       </font-face-src>
     </font-face>
   </defs>
-  <metadata> Produced by OmniGraffle 7.15.2 
-    <dc:date>2020-05-25 11:18:08 +0000</dc:date>
-  </metadata>
-  <g id="optics-composition" fill-opacity="1" fill="none" stroke-opacity="1" stroke="none" stroke-dasharray="none">
+  <metadata> Produced by OmniGraffle 7.17.5\n2020-10-31 15:21:58 +0000</metadata>
+  <g id="optics-composition" fill-opacity="1" stroke-dasharray="none" stroke-opacity="1" stroke="none" fill="none">
     <title>optics-composition</title>
     <rect fill="white" x="0" y="0" width="577" height="172"/>
-    <g id="optics-composition: Layer 1">
+    <g id="optics-composition_Layer_1">
       <title>Layer 1</title>
       <g id="Line_672">
         <path d="M 73.25013 122.12497 C 110.89675 90.56406 190.13397 36 288 36 C 366.27547 36 435.5426 70.90552 480.7454 101.02856" marker-end="url(#FilledArrow_Marker)" stroke="#70a3d8" stroke-linecap="round" stroke-linejoin="round" stroke-width="10"/>

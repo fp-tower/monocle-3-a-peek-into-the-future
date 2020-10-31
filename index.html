@@ -50,16 +50,16 @@ class: center, middle, white
 
 <br>
 
-.medium-left[
+.thirty-seven-left[
 <img src="img/fp-tower/julien-truffaut.jpg" alt="Julien Truffaut" style="width:300px;"/>
 ]
 
-.large-right[<br>
+.sixty-two-right[<br>
 ## Backend Scala developer
 
-## Author of a Scala FP course: Foundations
+## Scala FP instructor at fp-tower.com
 
-## Maintainer of Monocle 🧐
+## Maintainer of &nbsp<img src="img/fp-tower/monocle-logo.png" alt="Monocle" style="width:150px;"/>
 ]
 
 ---
@@ -71,9 +71,9 @@ class: center, middle, white
 
 ## 2. Quick overview of optics
 
-## 3. Current issues with Monocle
+## 3. Issues with current Monocle API
 
-## 4. The future with Dotty/Scala 3
+## 4. Next version of Monocle
 
 ---
 # Mutation
@@ -88,6 +88,38 @@ case class User(`var` name: String, `var` address: Address)
 case class Address(`var` streetNumber: Int, `var` postCode: String)
 ```
 
+---
+# Mutation
+
+<br>
+
+```scala
+case class User(var name: String, var address: Address)
+
+case class Address(var streetNumber: Int, var postCode: String)
+```
+
+<br>
+
+```scala
+val julien = User("julien", Address(`12`, "E16 4SR"))
+
+julien.address.streetNumber
+// res1: Int = `12`
+```
+
+---
+# Mutation
+
+<br>
+
+
+```scala
+case class User(var name: String, var address: Address)
+
+case class Address(var streetNumber: Int, var postCode: String)
+```
+
 <br>
 
 ```scala
@@ -96,7 +128,7 @@ val julien = User("julien", Address(12, "E16 4SR"))
 julien.address.streetNumber
 // res1: Int = 12
 
-julien.address.streetNumber = 16
+julien.address.streetNumber` = 16`
 // res2: User = User("julien", Address(`16`, "E16 4SR"))
 ```
 
@@ -111,12 +143,12 @@ julien.address.streetNumber = 16
 
 ## 3. Easier to test
 
-## 4. Concurrency
+## 4. Easier to write concurrent code
 
 ---
 # Concurrency
 
-.small-left[
+.twenty-seven-left[
 <img src="img/corecursive_400x400.jpg" alt="corecursive" style="width:300px;"/>
 ]
 
@@ -194,26 +226,28 @@ class: center, middle
 
 <br>
 
+
 ```scala
 case class User(name: String, address: Address)
 case class Address(streetNumber: Int, postCode: String)
 
-val julien = User("Julien", Address(12, "E16 4SR"))
+val julien = User("Julien", Address(`12`, "E16 4SR"))
 ```
 
 <br>
 
 .center[
-## How do we change the street number using vanilla Scala?
+## How do we change the .hl2[street number] using .hl2[vanilla Scala]?
 ]
 
 --
 
+
 ```scala
-julien.copy(address =
-  julien.address.copy(streetNumber = 16)
+julien.`copy`(address =
+  julien.address.`copy`(streetNumber = 16)
 )
-// res1: User = User("Julien", Address(16, "E16 4SR"))
+// res1: User = User("Julien", Address(`16`, "E16 4SR"))
 ```
 
 ---
@@ -236,9 +270,27 @@ case class DebitCard(
 ```
 
 ---
+# Example #2: Enumeration in Scala 3
+
+<br>
+
+```scala
+ import java.time.YearMonth
+
+ `enum` PaymentMethod {
+
+   case class PayPal(email: String)
+
+   case class DebitCard(cardNumber: String, expirationDate : YearMonth, securityCode: Int)
+
+ }
+```
+
+---
 # Example #2: Enumeration
 
 <br>
+
 
 
 ```scala
@@ -247,16 +299,14 @@ case class User(name: String, address: Address, paymentMethod: PaymentMethod)
 val julien = User(
   "Julien",
   Address(12, "E16 4SR"),
-  DebitCard("4568 5794 3109 3087", YearMonth.of(2022, 4), 361)
+  DebitCard("4568 5794 3109 3087", YearMonth.of(`2022, 4`), 361)
 )
 
 val anna = User("Anna", Address(10, "EC2M 7EB"), PayPal("anna@fp-tower.com"))
 ```
 
-<br>
-
 .center[
-## How do we change the expiry date using vanilla Scala?
+## How do we change the .hl2[expiry date] using .hl2[vanilla Scala]?
 ]
 
 ---
@@ -266,8 +316,8 @@ val anna = User("Anna", Address(10, "EC2M 7EB"), PayPal("anna@fp-tower.com"))
 
 ```scala
 def updateExpiry(user: User, newExpiry: YearMonth): User =
-  user.copy(paymentMethod =
-    user.paymentMethod.copy(expirationDate = newExpiry)
+  user.`copy`(paymentMethod =
+    user.paymentMethod.`copy`(expirationDate = newExpiry)
   )
 ```
 
@@ -281,19 +331,47 @@ def updateExpiry(user: User, newExpiry: YearMonth): User =
 ```scala
 def updateExpiry(user: User, newExpiry: YearMonth): User =
   user.copy(paymentMethod =
-    user.paymentMethod.copy(expirationDate = newExpiry)
+    user.paymentMethod.`copy`(expirationDate = newExpiry)
   )
 
-// error: value `copy` is not a member of PaymentMethod
+// error: value `copy is not a member of PaymentMethod`
 //   user.paymentMethod.copy(expirationDate = newExpiry)
-//   ^^^^^^^^^^^^^^^^^^^^^^^^^
+//   ^^^^^^^^^^^^^^^^^^^^^^^
 ```
+
+.center[
+## How do we copy an enum?
+]
+
+---
+# Example #2: Enumeration
 
 <br>
 
-.center[
-## How do we copy an enumeration?
-]
+```scala
+def updateExpiry(user: User, newExpiry: YearMonth): User =
+  user.copy(paymentMethod =
+    user.paymentMethod `match` {
+      `case` card  : DebitCard => ???
+      `case` paypal: PayPal    => ???
+    }
+  )
+```
+
+---
+# Example #2: Enumeration
+
+<br>
+
+```scala
+def updateExpiry(user: User, newExpiry: YearMonth): User =
+  user.copy(paymentMethod =
+    user.paymentMethod match {
+      case card  : DebitCard => card.`copy`(expirationDate = newExpiry)
+      case paypal: PayPal    => ???
+    }
+  )
+```
 
 ---
 # Example #2: Enumeration
@@ -305,7 +383,22 @@ def updateExpiry(user: User, newExpiry: YearMonth): User =
   user.copy(paymentMethod =
     user.paymentMethod match {
       case card  : DebitCard => card.copy(expirationDate = newExpiry)
-      case paypal: PayPal    => ???
+      case paypal: PayPal    => `???`
+    }
+  )
+```
+
+---
+# Example #2: Enumeration
+
+<br>
+
+```scala
+def updateExpiry(user: User, newExpiry: YearMonth): User =
+  user.copy(`paymentMethod = `
+    user.paymentMethod match {
+      case card  : DebitCard => card.copy(expirationDate = newExpiry)
+      case paypal: PayPal    => `paypal` // do nothing
     }
   )
 ```
@@ -325,27 +418,26 @@ def updateExpiry(user: User, newExpiry: YearMonth): User =
   )
 ```
 
---
 
 .small-code[
-.pull-left[
+.forty-seven-left[
 ```scala
-updateExpiry(julien, YearMonth.of(2024, 1))
-// res4: User = User(
+updateExpiry(julien, YearMonth.of(`2024, 1`))
+// res: User = User(
 //   "Julien",
 //   Address(12, "E16 4SR"),
-//   DebitCard("4568 5794 3109 3087", 2024-01, 361)
+//   DebitCard("4568 5794 3109 3087", `2024-01`, 361)
 // )
 ```
 ]
 
-.pull-right[
+.forty-seven-right[
 ```scala
-updateExpiry(anna, YearMonth.of(2024, 1))
-// res5: User = User(
+updateExpiry(anna, YearMonth.of(`2024, 1`))
+// res: User = User(
 //   "Anna",
 //   Address(10, "EC2M 7EB"),
-//   PayPal("anna@fp-tower.com")
+//   `PayPal("anna@fp-tower.com")`
 // )
 ```
 ]
@@ -357,24 +449,40 @@ updateExpiry(anna, YearMonth.of(2024, 1))
 <br>
 
 
+
 ```scala
-case class User(name: String, address: Address, paymentMethods: Map[String, PaymentMethod])
+case class User(name: String, address: Address, paymentMethods: `Map[String, PaymentMethod]`)
 
 val julien = User(
   "Julien",
   Address(12, "E16 4SR"),
   Map(
     "Personal" -> PayPal("julien@fp-tower.com"),
-    "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(2021, 7), 995)
+    `"Business"` -> DebitCard("4568 8980 2376 5431", YearMonth.of(`2021, 7`), 995)
   )
 )
 ```
 
+.center[
+## How do we change the .hl2[expiry date] of the .hl2[business] payment method?
+]
+
+---
+# Example #3: Data structure
+
 <br>
 
-.center[
-## How do we change the expiry date of a payment method?
-]
+
+```scala
+def updateExpiry(user: User, `paymentName`: String, newExpiry: YearMonth): User =
+  user.copy(paymentMethods =
+    user.paymentMethods.`get(paymentName)` match {
+      case None                    => ???
+      case Some(payPal: PayPal)    => ???
+      case Some(card  : DebitCard) => ???
+    }
+  )
+```
 
 ---
 # Example #3: Data structure
@@ -385,22 +493,55 @@ val julien = User(
 def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
   user.copy(paymentMethods =
     user.paymentMethods.get(paymentName) match {
-      case None                    => user.paymentMethods
-      case Some(paypal: PayPal)    => user.paymentMethods
-      case Some(card  : DebitCard) =>
-        val updatedCard = card.copy(expirationDate = newExpiry)
+      case `None | Some(_: PayPal)` => user.paymentMethods // do nothing
+      case Some(card: DebitCard) => ???
+    }
+  )
+```
+
+---
+# Example #3: Data structure
+
+<br>
+
+```scala
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  user.copy(paymentMethods =
+    user.paymentMethods.get(paymentName) match {
+      case None | Some(_: PayPal) => user.paymentMethods // do nothing
+      case Some(card: DebitCard)  =>
+        val updatedCard = card.`copy`(expirationDate = `newExpiry`)
         user.paymentMethods.updated(paymentName, updatedCard)
     }
   )
 ```
 
 ---
-# Optic
+# Example #3: Data structure
 
 <br>
 
 ```scala
-trait Optic[From, To] {
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  user.copy(paymentMethods =
+    user.paymentMethods.get(paymentName) match {
+      case None | Some(_: PayPal) => user.paymentMethods // do nothing
+      case Some(card: DebitCard)  =>
+        val updatedCard = card.copy(expirationDate = newExpiry)
+        user.paymentMethods.`updated`(paymentName, `updatedCard`)
+    }
+  )
+```
+
+---
+class: medium-code
+# Optic
+
+<br>
+
+.fifty-two-left[
+```scala
+trait Optic[`From`, `To`] {
 
   def get(from: From): To
 
@@ -410,9 +551,47 @@ trait Optic[From, To] {
 
 }
 ```
+]
 
 ---
-# Optics
+class: medium-code
+# Optic
+
+<br>
+
+.fifty-two-left[
+```scala
+trait Optic[From, To] {
+
+  def get(from: From): To
+
+
+  def replace(from: From, newTo: To): From
+
+
+  def modify(from: From, update: To => To): From
+
+}
+```
+]
+
+.forty-seven-right[
+```scala
+val nameOptic: Optic[`User`, `String`] = ...
+
+nameOptic.get(julien)
+// res: String = "Julien"
+
+nameOptic.replace(julien, "Bob")
+// res: User = User(`"Bob"`, Address(12, ...
+
+nameOptic.modify(julien, _.toUpperCase)
+// res: User = User(`"JULIEN"`, Address(12, ...
+```
+]
+
+---
+# Optic.hl2[(s)]
 
 <br>
 
@@ -431,7 +610,7 @@ trait Optic[From, To] {
 <br>
 
 .center[
-## Lens, Optional, Traversal, Prism, Iso, ...
+## Fancy names: Lens, Optional, Traversal, Prism, Iso, ...
 ]
 
 ---
@@ -440,9 +619,9 @@ trait Optic[From, To] {
 <br>
 
 ```scala
-trait Optic[From, To] {
+trait Optic[From, `To`] {
 
-  def andThen[Next](other: Optic[To, Next]): Optic[From, Next]
+  def andThen[Next](other: Optic[`To`, Next]): Optic[From, Next]
 
 }
 ```
@@ -452,22 +631,66 @@ trait Optic[From, To] {
 ]
 
 ---
-class: small-code
 # Optics composition
 
 .fifty-two-right[
 <br><br><br><br>
 ```scala
-                              // User
-paymentMethods                // Map[String, PaymentMethod]
-  .andThen(index("Personal")) // PaymentMethod
-  .andThen(debitCard)         // DebitCard
-  .andThen(expirationDate)    // YearMonth
+ `paymentMethods`
+   .andThen(index("Personal"))
+   .andThen(debitCard)
+   .andThen(expirationDate)
 ```
 ]
 
 
+<img src="img/diagrams/user-to-expiration-date-1.svg" alt="User to expiration date " style="width:430px;"/>
+
+---
+# Optics composition
+
+.fifty-two-right[
+<br><br><br><br>
+```scala
+ paymentMethods
+  .andThen(`index("Personal")`)
+  .andThen(debitCard)
+  .andThen(expirationDate)
+```
+]
+
 <img src="img/diagrams/user-to-expiration-date-2.svg" alt="User to expiration date " style="width:430px;"/>
+
+---
+# Optics composition
+
+.fifty-two-right[
+<br><br><br><br>
+```scala
+ paymentMethods
+  .andThen(index("Personal"))
+  .andThen(`debitCard`)
+  .andThen(expirationDate)
+```
+]
+
+<img src="img/diagrams/user-to-expiration-date-3.svg" alt="User to expiration date " style="width:430px;"/>
+
+---
+# Optics composition
+
+.fifty-two-right[
+<br><br><br><br>
+```scala
+ paymentMethods
+  .andThen(index("Personal"))
+  .andThen(debitCard)
+  .andThen(`expirationDate`)
+```
+]
+
+<img src="img/diagrams/user-to-expiration-date-4.svg" alt="User to expiration date " style="width:430px;"/>
+
 
 ---
 class: center, middle
@@ -477,18 +700,28 @@ class: center, middle
 ---
 class: medium-code
 
-# Vanilla Scala vs Optics
+# Why optics are not popular in Scala?
 
 <br>
 
+
+.center[.twelve-left[
+
+<br>
+## Vanilla<br>Scala
+
+<br><br>
+## Optics
+]]
+
+.eighty-two-right[
 
 ```scala
 def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
   user.copy(paymentMethods =
     user.paymentMethods.get(paymentName) match {
-      case None                    => user.paymentMethods
-      case Some(paypal: PayPal)    => user.paymentMethods
-      case Some(card  : DebitCard) =>
+      case None | Some(_: PayPal) => user.paymentMethods
+      case Some(card: DebitCard)  =>
         val updatedCard = card.copy(expirationDate = newExpiry)
         user.paymentMethods.updated(paymentName, updatedCard)
     }
@@ -503,6 +736,213 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
     .andThen(expirationDate)
     .replace(user, newExpiry)
 ```
+]
+
+---
+class: medium-code
+
+# Problem #1: Optics creation
+
+<br>
+
+```scala
+val paymentMethods     : Optic[User, Map[String, PaymentMethod]] = ...
+def index(name: String): Optic[Map[String, PaymentMethod], PaymentMethod] = ...
+val debitCard          : Optic[PaymentMethod, DebitCard] = ...
+val expirationDate     : Optic[DebitCard, YearMonth] = ...
+```
+
+<br>
+
+```scala
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  paymentMethods
+    .andThen(index(paymentName))
+    .andThen(debitCard)
+    .andThen(expirationDate)
+    .replace(user, newExpiry)
+```
+
+---
+class: medium-code
+
+# Problem #1: Optics creation
+
+<br>
+
+```scala
+val paymentMethods     : Optic[User, Map[String, PaymentMethod]] = ...
+def `index`(name: String): Optic[Map[String, PaymentMethod], PaymentMethod] = ...
+val debitCard          : Optic[PaymentMethod, DebitCard] = ...
+val expirationDate     : Optic[DebitCard, YearMonth] = ...
+```
+
+<br>
+
+```scala
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  paymentMethods
+    .andThen(index(paymentName))
+    .andThen(debitCard)
+    .andThen(expirationDate)
+    .replace(user, newExpiry)
+```
+
+---
+class: medium-code
+
+# Problem #1: Optics creation
+
+<br>
+
+```scala
+val paymentMethods: Optic[User, Map[String, PaymentMethod]] = ...
+val debitCard     : Optic[PaymentMethod, DebitCard] = ...
+val expirationDate: Optic[DebitCard, YearMonth] = ...
+```
+
+<br>
+
+```scala
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  paymentMethods
+    .andThen(index(paymentName))
+    .andThen(debitCard)
+    .andThen(expirationDate)
+    .replace(user, newExpiry)
+```
+
+---
+class: medium-code
+
+# Problem #1: Optics creation
+
+<br>
+
+```scala
+val paymentMethods: `Lens`[User, Map[String, PaymentMethod]] =
+  Lens[User, Map[String, PaymentMethod]](_.paymentMethods)(
+   (user, newPaymentMethods) => user.copy(paymentMethods = newPaymentMethods)
+  )
+
+val debitCard: `Prism`[PaymentMethod, DebitCard] =
+  Prism.partial{ case pm: PaymentMethod => pm }(identity)
+
+val expirationDate: `Lens`[DebitCard, YearMonth] =
+  Lens[DebitCard, YearMonth](_.expirationDate)(
+   (debitCard, newExpirationDate) => debitCard.copy(expirationDate = newExpirationDate)
+  )
+```
+
+.forty-seven-left[.center[
+## 1. Lots of boiler plate code
+]]
+
+.forty-seven-right[.center[
+## 2. Requires to know the difference<br>between optic types
+]]
+
+---
+class: medium-code
+
+# Monocle 2 macros
+
+<br>
+
+```scala
+import monocle.macros.{GenLens, GenPrism}
+
+val paymentMethods = GenLens[User](_.paymentMethods)
+val debitCard      = GenPrism[PaymentMethod, DebitCard]
+val expirationDate = GenLens[DebitCard](_.expirationDate)
+```
+
+---
+class: medium-code
+
+# Monocle 2 macro annotation
+
+<br>
+
+```scala
+import monocle.macros.Lenses
+
+@Lenses
+case class User(name: String, address: Address, paymentMethods: Map[String, PaymentMethod])
+```
+
+--
+
+```scala
+object User {
+  // The macro generates the following optics
+  //
+  // val name          : Lens[User, String] = ...
+  // val address       : Lens[User, Address] = ...
+  // val paymentMethods: Lens[User, Map[String, PaymentMethod]] = ...
+}
+```
+
+--
+
+.center[
+.forty-seven-left[
+## 1. Requires IDE support
+]
+.fifty-two-right[
+## 2. No macro annotations in Scala 3
+]]
+
+---
+# Solution: Focus macro (Scala 3)
+
+<br>
+
+```scala
+import monocle.Focus
+
+Focus[User](_.address.streetNumber)
+// res: Lens[User, Int]
+
+Focus[User](_.previousOrder.?.total)
+// res: Optional[User, Double]
+
+Focus[User](_.paymentMethods.*.expirationDate)
+// res: Traversal[User, YearMonth]
+```
+
+<br>
+
+.center[
+## Prototype developed by .hl2[Yilin Wei] in Monocly
+]
+
+---
+# Problem 2: Discoverability
+
+---
+# Monocle 3: Focus macro
+
+<br>
+
+```scala
+import monocle.Focus
+
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  user.focus(_
+    .paymentMethods
+    .index(paymentName)
+    .as[DebitCard]
+    .expirationDate
+  ).replace(newExpiry)
+```
+
+<br>
+
+.center[
+## IDE support out of the box
+Thanks to Yilin Wei
+]
 
 ---
 class: medium-code
@@ -514,9 +954,9 @@ class: medium-code
 ```scala
 def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
   paymentMethods
-    .composeOptional(index(paymentName))
-    .composePrism(debitCard)
-    .composeLens(expirationDate)
+    .`composeOptional`(index(paymentName))
+    .`composePrism`(debitCard)
+    .`composeLens`(expirationDate)
     .replace(user, newExpiry)
 ```
 
@@ -524,9 +964,9 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
 
 ```scala
 trait Optic[From, To] {
-  def composeOptional[Next](other: Optional[To, Next]): Optic[From, Next]
-  def composePrism   [Next](other: Prism   [To, Next]): Optic[From, Next]
-  def composeLens    [Next](other: Lens    [To, Next]): Optic[From, Next]
+  def compose`Optional`[Next](other: `Optional`[To, Next]): Optic[From, Next]
+  def compose`Prism`   [Next](other: `Prism`   [To, Next]): Optic[From, Next]
+  def compose`Lens`    [Next](other: `Lens`    [To, Next]): Optic[From, Next]
 }
 ```
 
@@ -582,7 +1022,7 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
 ---
 class: medium-code
 
-# Monocle 3 thanks to Dotty
+# Monocle with Scala 3
 
 <br>
 
@@ -594,166 +1034,17 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
     .andThen(expirationDate)
     .replace(user, newExpiry)
 ```
+
+--
 
 ## Maybe with infix operator
 
 ```scala
 def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
-  (paymentMethods >>> index(paymentName) >>> debitCard >>> expirationDate)
+  (paymentMethods `>>>` index(paymentName) `>>>` debitCard `>>>` expirationDate)
     .replace(user, newExpiry)
 ```
 
-
----
-class: medium-code
-
-# Problem #2: Optics creation
-
-<br>
-
-```scala
-val paymentMethods     : Optic[User, Map[String, PaymentMethod]] = ...
-def index(name: String): Optic[Map[String, PaymentMethod], PaymentMethod] = ...
-val debitCard          : Optic[PaymentMethod, DebitCard] = ...
-val expirationDate     : Optic[DebitCard, YearMonth] = ...
-```
-
-<br>
-
-```scala
-def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
-  paymentMethods
-    .andThen(index(paymentName))
-    .andThen(debitCard)
-    .andThen(expirationDate)
-    .replace(user, newExpiry)
-```
-
----
-class: medium-code
-
-# Problem #2: Optics creation
-
-<br>
-
-```scala
-val paymentMethods: Optic[User, Map[String, PaymentMethod]] = ...
-val debitCard     : Optic[PaymentMethod, DebitCard] = ...
-val expirationDate: Optic[DebitCard, YearMonth] = ...
-```
-
-<br>
-
-```scala
-def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
-  paymentMethods
-    .andThen(index(paymentName))
-    .andThen(debitCard)
-    .andThen(expirationDate)
-    .replace(user, newExpiry)
-```
-
----
-class: medium-code
-
-# Monocle 2 macros
-
-<br>
-
-```scala
-import monocle.macros.{GenLens, GenPrism}
-
-val paymentMethods = GenLens[User](_.paymentMethods)
-val debitCard      = GenPrism[PaymentMethod, DebitCard]
-val expirationDate = GenLens[DebitCard](_.expirationDate)
-```
-
-<br>
-
-```scala
-def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
-  paymentMethods
-    .andThen(index(paymentName))
-    .andThen(debitCard)
-    .andThen(expirationDate)
-    .replace(user, newExpiry)
-```
-
----
-class: medium-code
-
-# Monocle 2 macro annotation
-
-<br>
-
-```scala
-import monocle.macros.Lenses
-
-@Lenses
-case class User(name: String, address: Address, paymentMethods: Map[String, PaymentMethod])
-
-object User {
-  // Generated
-  // val name          : Lens[User, String] = ...
-  // val address       : Lens[User, Address] = ...
-  // val paymentMethods: Lens[User, Map[String, PaymentMethod]] = ...
-}
-```
-
-.center[
-.pull-left[
-## Requires IDE specific support
-]
-.pull-right[
-## Doesn't exist in Scala 3
-]
-]
-
----
-# Monocle 3: Focus macro
-
-<br>
-
-```scala
-import monocle.Focus
-
-def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
-  Focus[User](_.paymentMethods
-    .index(paymentName)
-    .as[DebitCard]
-    .expirationDate
-  ).replace(user, newExpiry)
-```
-
-<br>
-
-.center[
-## IDE support out of the box
-Thanks to Yilin Wei
-]
-
----
-# Monocle 3: Focus macro
-
-<br>
-
-```scala
-import monocle.Focus
-
-def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
-  user.focus(_.paymentMethods
-    .index(paymentName)
-    .as[DebitCard]
-    .expirationDate
-  ).replace(newExpiry)
-```
-
-<br>
-
-.center[
-## IDE support out of the box
-Thanks to Yilin Wei
-]
 
 ---
 # Problem 3: Lawfulness
@@ -763,63 +1054,95 @@ Thanks to Yilin Wei
 ]
 
 ---
-class: medium-code
-
-# Expected behaviour of an interface
+# Problem 3: Lawfulness
 
 <br>
 
 ```scala
-trait Optic[From, To] {
-  def get(from: From): To
-  def replace(from: From, newTo: To): From
-  def modify(from: From, update: To => To): From
-}
+case class User(firstName: String, lastName: String, age: Int)
+
+val user = User("Eda", "Smith", 34)
+
+val ageOptic: Optic[User, Int] = ...
 ```
 
+--
+
 <br>
 
 ```scala
-val nameOptic: Optic[User, String] = ...
+val newUser = ageOptic.replace(user, `48`)
+// newUser: User = User("Eda", "Smith", `48`)
 
-test("get after replace"){
-  forAll{ (user: User, newName: String) =>
-    val updatedUser = nameOptic.replace(user, newName)
-    nameOptic.get(updatedUser) shouldEqual newName
-  }
-}
+val newAge  = ageOptic.get(newUser)
+// newAge: Int = `48`
 ```
 
 ---
-class: medium-code
-
-# Expected behaviour of an interface
+# Problem 3: Lawfulness
 
 <br>
 
 ```scala
-trait Optic[From, To] {
-  def get(from: From): To
-  def replace(from: From, newTo: To): From
-  def modify(from: From, update: To => To): From
-}
+case class User(firstName: String, lastName: String, age: Int)
+
+val user = User("Eda", "Smith", 34)
+
+val ageOptic: Optic[User, Int] = ...
 ```
 
+.fifty-seven-left[
 
 ```scala
-val nameOptic: Optic[User, String] = ...
+test("replace and then get the same thing"){
+  `forAll`{ (`user`: User, `newAge`: Int) =>
 
-test("modify fusion"){
-  forAll{ (user: User, update1: String => String, update2: String => String) =>
-    val step1 = nameOptic.modify(user , update1)
-    val step2 = nameOptic.modify(step1, update2)
+    val newUser = ageOptic.replace(user, newAge)
 
-    val both  = nameOptic.modify(user , update1 andThen update2)
+    assert(ageOptic.get(newUser) == newAge)
 
-    step2 shouldEqual both
   }
 }
 ```
+]
+
+.thirty-seven-left[.center[
+<br>
+## &nbsp&nbsp&nbsp&nbspProperty-Based Testing (PBT)
+]]
+
+---
+# Problem 3: Lawfulness
+
+<br>
+
+```scala
+case class User(firstName: String, lastName: String, age: Int)
+
+val user = User("Eda", "Smith", 34)
+
+val ageOptic: Optic[User, Int] = ...
+```
+
+.fifty-seven-left[
+
+```scala
+test("replace and then get the same thing"){
+  forAll{ (user: User, `newAge`: Int) =>
+
+    val newUser = ageOptic.replace(user, `newAge`)
+
+    assert(ageOptic.get(newUser) == `newAge`)
+
+  }
+}
+```
+]
+
+.thirty-seven-left[.center[
+<br>
+## &nbsp&nbsp&nbsp&nbspProperty-Based Testing (PBT)
+]]
 
 ---
 # FP library design principle
@@ -829,7 +1152,7 @@ test("modify fusion"){
 ## When using a constructor, you need to verify the behaviour
 
 ```scala
-val nameOptic = Optic[User, String](_.name, (newName, user) => user.copy(name = newName))
+val ageOptic = Optic[User, Int](_.age, (newAge, user) => user.copy(age = newAge))
 ```
 
 <br>
@@ -839,6 +1162,28 @@ val nameOptic = Optic[User, String](_.name, (newName, user) => user.copy(name = 
 ```scala
 address andThen streetNumber
 ```
+
+---
+# Expected behaviour
+
+<br>
+
+```scala
+val nameOptic: Optic[User, String] = ...
+
+test("modify fusion"){
+  forAll{ (user: User, update1: String => String, update2: String => String) =>
+    val step1 = nameOptic.modify(user , `update1`)
+    val step2 = nameOptic.modify(step1, `update2`)
+
+    val both  = nameOptic.modify(user , `update1 andThen update2`)
+
+    step2 shouldEqual both
+  }
+}
+```
+
+
 
 ---
 class: medium-code
@@ -1013,7 +1358,7 @@ class: center, middle
 <br><br><br>
 
 .center[
-.pull-left[
+.forty-seven-left[
 # Monocle 2
 
 <br>
@@ -1025,7 +1370,7 @@ class: center, middle
 ### Lawful at all cost
 ]
 
-.pull-right[
+.forty-seven-right[
 # Monocle 3
 
 <br>
@@ -1099,11 +1444,11 @@ background-image: url(img/fp-tower/website-background.svg)
 
 <br>
 .center[
-.pull-left[
+.forty-seven-left[
 <img src="img/monocle-sticker-blue.png" alt="Monocle blue sticker" style="width:300px;"/>
 ]
 
-.pull-right[
+.forty-seven-right[
 <img src="img/monocle-sticker-white.png" alt="Monocle blue sticker" style="width:300px;"/>
 ]
 ]
@@ -1162,7 +1507,7 @@ val julien = User(
 )
 ```
 
-.pull-left[
+.forty-seven-left[
 ```scala
 expiryOptic("Personal").get(julien)
 // res: Option[YearMonth] = Some(2020-01)
@@ -1175,7 +1520,7 @@ expiryOptic("Other").get(julien)
 ```
 ]
 
-.pull-right[.center[
+.forty-seven-right[.center[
 <br>
 ## Same for replace, modify
 ]]
@@ -1199,7 +1544,7 @@ val julien = User(
 )
 ```
 
-.large-left[
+.fifty-seven-left[
 ```scala
 expiryOptic("Personal").get(julien)
 // res = Right(2020-01)
@@ -1212,7 +1557,7 @@ expiryOptic("Other").get(julien)
 ```
 ]
 
-.medium-right[
+.thirty-seven-right[
 <br>
 ```scala
 Either[
