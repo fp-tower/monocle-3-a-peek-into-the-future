@@ -234,8 +234,6 @@ case class Address(streetNumber: Int, postCode: String)
 val julien = User("Julien", Address(`12`, "E16 4SR"))
 ```
 
-<br>
-
 .center[
 ## How do we change the .hl2[street number] using .hl2[vanilla Scala]?
 ]
@@ -267,23 +265,6 @@ case class DebitCard(
   expirationDate : YearMonth,
   securityCode   : Int
 ) extends PaymentMethod
-```
-
----
-# Example #2: Enumeration in Scala 3
-
-<br>
-
-```scala
- import java.time.YearMonth
-
- `enum` PaymentMethod {
-
-   case class PayPal(email: String)
-
-   case class DebitCard(cardNumber: String, expirationDate : YearMonth, securityCode: Int)
-
- }
 ```
 
 ---
@@ -340,7 +321,7 @@ def updateExpiry(user: User, newExpiry: YearMonth): User =
 ```
 
 .center[
-## How do we copy an enum?
+## How do we modify an enum?
 ]
 
 ---
@@ -893,11 +874,6 @@ object User {
 background-image: url(img/lotr-focus.jpg)
 
 ---
-background-image: url("img/lotr-focus.jpg")
-background-repeat: no-repeat
-background-size: cover
-
----
 # Solution: Focus macro
 
 <br>
@@ -974,94 +950,168 @@ Focus[User](_.paymentMethods.*.cardNumber)
 ]
 
 ---
-# Problem 3: Lawfulness
+class: medium-code
+# Problem 2: Lawfulness
 
-<br>
-
+.fifty-four-left[
 ```scala
-case class User(firstName: String, lastName: String, age: Int)
-
-val user = User("Eda", "Smith", 34)
-
-val ageOptic: Optic[User, Int] = ...
-```
-
---
-
-<br>
-
-```scala
-val newUser = ageOptic.replace(user, `48`)
-// newUser: User = User("Eda", "Smith", `48`)
-
-val newAge  = ageOptic.get(newUser)
-// newAge: Int = `48`
-```
-
----
-# Problem 3: Lawfulness
-
-<br>
-
-```scala
-case class User(firstName: String, lastName: String, age: Int)
-
-val user = User("Eda", "Smith", 34)
-
-val ageOptic: Optic[User, Int] = ...
-```
-
-.fifty-seven-left[
-
-```scala
-test("replace and then get the same thing"){
-  `forAll`{ (`user`: User, `newAge`: Int) =>
-
-    val newUser = ageOptic.replace(user, newAge)
-
-    assert(ageOptic.get(newUser) == newAge)
-
-  }
+trait Optic[From, To] {
+  def get(from: From): To
+  def replace(from: From, newTo: To): From
+  def modify(from: From, update: To => To): From
 }
+
+val user = User("Julien", 34, Address(12, "Cody Road"))
+
+val userToStreetNumber: Optic[User, Int] = ...
 ```
 ]
 
-.thirty-seven-left[.center[
-<br>
-## &nbsp&nbsp&nbsp&nbspProperty-Based Testing (PBT)
+.forty-five-right[.center[
+<img src="img/diagrams/recursive-json-1.svg" alt="Json tree" style="width:500px;"/>
 ]]
 
 ---
-# Problem 3: Lawfulness
+class: medium-code
+# Problem 2: Lawfulness
 
-<br>
-
+.fifty-four-left[
 ```scala
-case class User(firstName: String, lastName: String, age: Int)
+trait Optic[From, To] {
+  def get(from: From): To
+  def replace(from: From, newTo: To): From
+  def modify(from: From, update: To => To): From
+}
 
-val user = User("Eda", "Smith", 34)
+val user = User("Julien", 34, Address(12, "Cody Road"))
 
-val ageOptic: Optic[User, Int] = ...
+val userToStreetNumber: Optic[User, Int] = ...
+
+val newUser = userToStreetNumber.replace(user, `48`)
+// newUser: User = User("Julien", 34,
+//   Address(`48`, "Cody Road"))
 ```
+]
+
+.forty-five-right[.center[
+<img src="img/diagrams/recursive-json-2.svg" alt="Json tree" style="width:500px;"/>
+]]
+
+---
+class: medium-code
+# Problem 2: Lawfulness
+
+.fifty-four-left[
+```scala
+trait Optic[From, To] {
+  def get(from: From): To
+  def replace(from: From, newTo: To): From
+  def modify(from: From, update: To => To): From
+}
+
+val user = User("Julien", 34, Address(12, "Cody Road"))
+
+val userToStreetNumber: Optic[User, Int] = ...
+
+val newUser = userToStreetNumber.replace(user, `48`)
+// newUser: User = User("Julien", 34,
+//   Address(48, "Cody Road"))
+
+val newStreetNumber = userToStreetNumber.get(newUser)
+// newStreetNumber: Int = `48`
+```
+]
+
+.forty-five-right[.center[
+<img src="img/diagrams/recursive-json-2.svg" alt="Json tree" style="width:500px;"/>
+]]
+
+---
+class: medium-code
+# Problem 2: Expected behaviour
 
 .fifty-seven-left[
-
 ```scala
-test("replace and then get the same thing"){
-  forAll{ (user: User, `newAge`: Int) =>
+trait Optic[From, To] {
+  def get(from: From): To
+  def replace(from: From, newTo: To): From
+  def modify(from: From, update: To => To): From
+}
 
-    val newUser = ageOptic.replace(user, `newAge`)
+val userToStreetNumber: Optic[User, Int] = ...
 
-    assert(ageOptic.get(newUser) == `newAge`)
+test("get what you set"){
+  `forAll`{ (user: User, newStreetNumber: Int) =>
+
+    val newUser = userToStreetNumber
+      .replace(user, newStreetNumber)
+
+    assert(
+      userToStreetNumber.get(newUser) == newStreetNumber
+    )
 
   }
 }
 ```
 ]
 
-.thirty-seven-left[.center[
-<br>
-## &nbsp&nbsp&nbsp&nbspProperty-Based Testing (PBT)
+.forty-two-left[.center[
+<br><br><br><br><br><br><br>
+## &nbsp&nbsp&nbsp&nbspProperty-Based Testing<br>(PBT)
+]]
+
+---
+class: medium-code
+# Problem 2: Lawfulness
+
+.fifty-four-left[
+```scala
+trait Optic[From, To] {
+  def get(from: From): To
+  def replace(from: From, newTo: To): From
+  def modify(from: From, update: To => To): From
+}
+
+val ageAndStreetName: Optic[User, (Int, String)] =
+  Focus[User](_.age)
+    .combine(Focus[User](_.address.streetName))
+
+ageAndStreetName.get(user)
+// res: (Int, String) = (34, "Cody Road")
+```
+]
+
+.forty-five-right[.center[
+<img src="img/diagrams/recursive-json-3.svg" alt="Json tree" style="width:500px;"/>
+]]
+
+---
+class: medium-code
+# Problem 2: Lawfulness
+
+.fifty-four-left[
+```scala
+trait Optic[From, To] {
+  def get(from: From): To
+  def replace(from: From, newTo: To): From
+  def modify(from: From, update: To => To): From
+}
+
+val ageAndStreetName: Optic[User, (Int, String)] =
+  Focus[User](_.age)
+    .combine(Focus[User](_.address.streetName))
+
+ageAndStreetName.get(user)
+// res: (Int, String) = (34, "Cody Road")
+
+ageAndStreetName.replace(user, (`27, "High Street"`))
+// newUser: User =
+//   User("Julien", `27`, Address(12, `"High Street"`))
+```
+]
+
+.forty-five-right[.center[
+<img src="img/diagrams/recursive-json-4.svg" alt="Json tree" style="width:500px;"/>
 ]]
 
 ---
