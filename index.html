@@ -57,7 +57,7 @@ class: center, middle, white
 .sixty-two-right[<br>
 ## Backend Scala developer
 
-## Scala FP instructor at fp-tower.com
+## FP instructor at www.fp-tower.com
 
 ## Maintainer of &nbsp<img src="img/fp-tower/monocle-logo.png" alt="Monocle" style="width:150px;"/>
 ]
@@ -73,7 +73,7 @@ class: center, middle, white
 
 ## 3. Issues with current Monocle API
 
-## 4. Next version of Monocle
+## 4. How we intend to fix them
 
 ---
 # Mutation
@@ -128,7 +128,9 @@ val julien = User("julien", Address(12, "E16 4SR"))
 julien.address.streetNumber
 // res1: Int = 12
 
-julien.address.streetNumber` = 16`
+julien.address.streetNumber `= 16`
+
+julien
 // res2: User = User("julien", Address(`16`, "E16 4SR"))
 ```
 
@@ -137,13 +139,11 @@ julien.address.streetNumber` = 16`
 
 <br>
 
-## 1. Share data without risk
+## 1. Free features: rollback, versioning
 
-## 2. Free features: versioning, rollback
+## 2. Easier to test
 
-## 3. Easier to test
-
-## 4. Easier to write concurrent code
+## 3. Manageable concurrency
 
 ---
 # Concurrency
@@ -834,12 +834,12 @@ val expirationDate: `Lens`[DebitCard, YearMonth] =
   )
 ```
 
-.forty-seven-left[.center[
+.forty-two-left[.center[
 ## 1. Lots of boiler plate code
 ]]
 
-.forty-seven-right[.center[
-## 2. Requires to know the difference<br>between optic types
+.fifty-two-right[.center[
+## 2. Requires to know the difference<br>between optics types
 ]]
 
 ---
@@ -871,8 +871,6 @@ import monocle.macros.Lenses
 case class User(name: String, address: Address, paymentMethods: Map[String, PaymentMethod])
 ```
 
---
-
 ```scala
 object User {
   // The macro generates the following optics
@@ -883,8 +881,6 @@ object User {
 }
 ```
 
---
-
 .center[
 .forty-seven-left[
 ## 1. Requires IDE support
@@ -892,6 +888,26 @@ object User {
 .fifty-two-right[
 ## 2. No macro annotations in Scala 3
 ]]
+
+---
+background-image: url(img/lotr-focus.jpg)
+
+---
+background-image: url("img/lotr-focus.jpg")
+background-repeat: no-repeat
+background-size: cover
+
+---
+# Solution: Focus macro
+
+<br>
+
+```scala
+import monocle.Focus
+
+Focus[User](_.address.streetNumber)
+// res: `Lens`[User, Int]
+```
 
 ---
 # Solution: Focus macro
@@ -904,11 +920,44 @@ import monocle.Focus
 Focus[User](_.address.streetNumber)
 // res: Lens[User, Int]
 
-Focus[User](_.previousOrder.?.total)
-// res: Optional[User, Double]
+Focus[User](_.paymentMethods.`index("Business")`.expirationDate)
+// res: `Optional`[User, YearMonth]
+```
 
-Focus[User](_.paymentMethods.*.expirationDate)
-// res: Traversal[User, YearMonth]
+---
+# Solution: Focus macro
+
+<br>
+
+```scala
+import monocle.Focus
+
+Focus[User](_.address.streetNumber)
+// res: Lens[User, Int]
+
+Focus[User](_.paymentMethods.index("Business").expirationDate)
+// res: Optional[User, YearMonth]
+
+Focus[User](_.paymentMethods.`*`.cardNumber)
+// res: `Traversal`[User, String]
+```
+
+---
+# Solution: Focus macro
+
+<br>
+
+```scala
+import monocle.Focus
+
+Focus[User](_.address.streetNumber)
+// res: Lens[User, Int]
+
+Focus[User](_.paymentMethods.index("Business").expirationDate)
+// res: Optional[User, YearMonth]
+
+Focus[User](_.paymentMethods.*.cardNumber)
+// res: Traversal[User, String]
 ```
 
 <br>
@@ -918,27 +967,7 @@ Focus[User](_.paymentMethods.*.expirationDate)
 ]
 
 ---
-class: medium-code
-
-# Problem 2: Discoverability
-
-<br>
-
-```scala
-val optContactDetailsOptic: Optic[State, Map[Country, PaymentMethod]] = ...
-```
-<br>
-
-```scala
-case class ContactDetails(name: String, address: Address, ...)
-
-case class Address(streetNumber: Int, postCode: String)
-```
-
-// TODO talk about .some, .each, add javadoc pic
-
----
-# Problem 3: Lawfulness
+# Problem 2: Lawfulness
 
 .center[
 <img src="img/police.jpg" alt="Police" style="width:500px;"/>
@@ -1245,15 +1274,20 @@ class: center, middle
 # Monocle 3 will be less strict and <br> offer powerful combinators (maybe dangerous)
 
 ---
-# Monocle 3: Focus on usability
+# Monocle 3: Focus on user experience
 
 <br>
 
 ## Almighty Focus macro
 
-## Dedicated methods for common composition (some, each, index)
+--
 
-## New powerful combinators (filter, withDefault)
+## Shortcuts for common patterns: some, each, index
+
+
+## New powerful (and potentially dangerous) combinators: filter, withDefault
+
+--
 
 ## And much more...
 
@@ -1330,20 +1364,20 @@ background-image: url(img/fp-tower/website-background.svg)
 
 class: center, middle, white
 
-.title[Thank you,<br>Any questions?]
+.title[Thank you]
 
 ---
 # Foundations of Functional Programming in Scala
 
 <br>
 
-## Self-paced online course
+## 1. Self-paced online course
 
-## Practical side of Functional Programming
+## 2. Practical side of Functional Programming
 
-## No prerequisites other than basic Scala syntax
+## 3. No prerequisites other than basic Scala syntax
 
-## Early Access Program: ~40% content available
+## 4. Early Access Program: ~40% content available
 
 ---
 background-image: url(img/fp-tower/website-background.svg)

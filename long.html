@@ -1,0 +1,222 @@
+---
+# Problem 2: How do you become a power user?
+
+## 1. Documentation and FAQ
+
+.center[
+<img src="img/FAQ.png" alt="Monocle FAQ" style="width:800px;"/>
+]
+
+---
+# Problem 2: How do you become a power user?
+
+## 1. Documentation and FAQ
+
+.twenty-seven-left[
+<br><br><br><br><br>
+## 2. StackOverflow
+]
+.sixty-seven-right[
+<img src="img/stackoverflow-1.png" alt="Stackoverflow answer 1" style="width:700px;"/>
+]
+
+---
+# Problem 2: How do you become a power user?
+
+## 1. Documentation and FAQ
+
+.twenty-seven-left[
+<br><br><br><br><br>
+## 2. StackOverflow
+]
+.sixty-seven-right[
+<img src="img/stackoverflow-2.png" alt="Stackoverflow answer 1" style="width:700px;"/>
+]
+
+---
+# Solution: Create shortcuts for common patterns
+
+.forty-seven-left[
+## Now
+
+```scala
+import monocle.function.Index.index
+import monocle.function.At.at
+import monocle.std.option.some
+
+paymentMethods.andThen(index("Business"))
+
+paymentMethods.andThen(at("Personal"))
+
+contactDetails
+.andThem(some)
+.andThen(email)
+```
+]
+
+.forty-seven-right[
+## Next version
+
+```scala
+
+
+
+
+paymentMethods.index("Business")
+
+paymentMethods.at("Personal")
+
+contactDetails.some
+.andThen(email)
+```
+]
+
+---
+class: medium-code
+
+# Solution: Create shortcuts for common patterns
+
+<br>
+
+```scala
+trait Optic[From, To] {
+// get / replace / modify / andThen
+}
+
+extension [From, To](self: Optic[From, `Option[To]`])
+def some: Optic[From, `To`] =
+self andThen monocle.std.option.some
+```
+
+--
+
+<br>
+
+```scala
+val contactDetails: Optic[User, Option[ContactDetails]] = ...
+
+(contactDetails.some.andThen(email)).get(julien)
+// res: Option[String] = Some("julien@fp-tower.com")
+```
+
+---
+class: medium-code
+
+# Solution: Create shortcuts for common patterns
+
+<br>
+
+
+```scala
+trait Optic[From, To] {
+// get / replace / modify / andThen
+}
+
+extension [From, To](self: Optic[From, Option[To]])
+// Focus into a Some, if it is a None do nothing
+// {{
+// val emailOptic: Optic[User, Option[String]] = ...
+//
+// emailOptic.some.replace(User("John", Some("j@d.com")), "j@hey.com")
+// res: User = User("John", Some("j@hey.com"))
+//
+// emailOptic.some.replace(User("John", None), "j@hey.com")
+// res: User = User("John", None)
+// }}
+def some: Optic[From, To] =
+self andThen monocle.std.option.some
+```
+
+
+---
+class: center, middle
+
+# How do you become a power user?
+
+---
+class: center, middle
+
+# How do you zoom into an Option?
+
+---
+class: center, middle
+
+# What happens if it is a None?
+
+## Can I provide a fallback value?
+
+## Is there anything I should be mindful of?
+
+---
+# Two issues
+
+<br>
+
+## 1. Macro are magical black boxes
+
+## 2. Optics composition is too "open"
+
+.center[
+<img src="img/diagrams/optics-composition-2.svg" alt="Optics composition" style="width:800px;"/>
+]
+
+---
+class: center, middle
+
+.forty-seven-left[
+<br>
+## A piece of puzzle
+<br>
+
+<img src="img/puzzle.jpg" alt="Piece of puzzle" style="width:400px;"/>
+]
+
+.forty-seven-right[
+<br>
+## 3D printer
+<img src="img/3d-printer.png" alt="3D printer" style="width:400px;"/>
+]
+
+---
+# Problem 2: Discoverability & Documentation
+
+<br>
+
+```scala
+import monocle.function.Index.index
+
+paymentMethods.andThen(index("Business"))
+```
+
+---
+# Problem 2: Discoverability & Documentation
+
+<br>
+
+```scala
+import monocle.function.Index.index
+import monocle.function.At.at
+
+paymentMethods.andThen(index("Business"))
+// res: Optic[User, PaymentMethod]
+
+paymentMethods.andThen(at("Business"))
+// res: Optic[User, `Option`[PaymentMethod]]
+```
+
+--
+<br>
+
+## .hl2[at] allows insertion and deletion but .hl2[index] is more convenient
+
+---
+# Problem 2: Discoverability
+
+<br>
+
+```scala
+val usersOptics: Optic[State, Option[User]] = ...
+
+(optUser andThen `monocle.std.option.some` andThen name).get(state)
+// res: Option[User] = Some(...)
+```

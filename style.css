@@ -20,6 +20,8 @@ h2, h3 { font-family: 'Yanone Kaffeesatz'; font-weight: normal; color: #6f9a9c; 
 .hl2 { color : #6f9a9c; text-decoration: underline; }
 
 .twelve-left        { float: left ; width: 12%; }
+.seventeen-left     { float: left ; width: 17%; }
+.twenty-two-left    { float: left ; width: 22%; }
 .twenty-seven-left  { float: left ; width: 27%; }
 .twenty-seven-right { float: right; width: 27%; }
 .thirty-two-left    { float: left ; width: 32%; }
