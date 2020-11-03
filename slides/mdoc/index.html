@@ -29,21 +29,17 @@ In this talk, I will discuss the shortcomings of Monocle, a library I created si
     <textarea id="source">
 
 
-layout: true
+background-image: url(img/fp-tower/website-background.svg)
+
+class: center, middle, white
+
+.title[Monocle 3: a peek into the future]
 
 <div class="watermark">
   <a href="https://github.com/fp-tower">
     <img src="img/fp-tower/grey-4-fp-watermark-image-raster-transparent-file.png" alt="logo" style="width:200px;"/>
   </a>
 </div>
-
-
----
-background-image: url(img/fp-tower/website-background.svg)
-
-class: center, middle, white
-
-.title[Monocle 3: a peek into the future]
 
 ---
 # Julien Truffaut
@@ -620,7 +616,7 @@ class: medium-code
 
 <br>
 
-.fifty-two-left[
+.fifty-left[
 ```scala
 trait Optic[From, To] {
 
@@ -927,42 +923,10 @@ val expirationDate = GenLens[DebitCard](_.expirationDate)
 ```
 
 ---
-class: medium-code
-
-# Monocle 2 macro annotation
-
-<br>
-
-```scala
-import monocle.macros.Lenses
-
-@Lenses
-case class User(name: String, address: Address, paymentMethods: Map[String, PaymentMethod])
-```
-
-```scala
-object User {
-  // The macro generates the following optics
-  //
-  // val name          : Lens[User, String] = ...
-  // val address       : Lens[User, Address] = ...
-  // val paymentMethods: Lens[User, Map[String, PaymentMethod]] = ...
-}
-```
-
-.center[
-.forty-seven-left[
-## 1. Requires IDE support
-]
-.fifty-two-right[
-## 2. No macro annotations in Scala 3
-]]
-
----
 background-image: url(img/lotr-focus.jpg)
 
 ---
-# Solution: Focus macro
+# Solution: Focus macro (Scala 3)
 
 <br>
 
@@ -974,12 +938,12 @@ Focus[User](_.address.streetNumber)
 ```
 
 ---
-# Solution: Focus macro
+# Solution: Focus macro (Scala 3)
 
 <br>
 
 ```scala
-import monocle.Focus
+import monocle.Focus (Scala 3)
 
 Focus[User](_.address.streetNumber)
 // res: Lens[User, Int]
@@ -989,7 +953,7 @@ Focus[User](_.paymentMethods.`index("Business")`.expirationDate)
 ```
 
 ---
-# Solution: Focus macro
+# Solution: Focus macro (Scala 3)
 
 <br>
 
@@ -1007,7 +971,7 @@ Focus[User](_.paymentMethods.`*`.cardNumber)
 ```
 
 ---
-# Solution: Focus macro
+# Solution: Focus macro (Scala 3)
 
 <br>
 
@@ -1038,8 +1002,13 @@ Focus[User](_.paymentMethods.*.cardNumber)
 ]
 
 ---
+class: center, middle
+
+# Expected behaviour or<br><br>Contract
+
+---
 class: medium-code
-# Problem 2: Lawfulness
+# Problem 2: Expected behaviour
 
 .fifty-four-left[
 ```scala
@@ -1051,7 +1020,8 @@ trait Optic[From, To] {
 
 val user = User("Julien", 34, Address(12, "Cody Road"))
 
-val userToStreetNumber: Optic[User, Int] = ...
+val userToStreetNumber: Optic[User, Int] =
+  Focus[User](_.address.streetNumber)
 ```
 ]
 
@@ -1061,7 +1031,7 @@ val userToStreetNumber: Optic[User, Int] = ...
 
 ---
 class: medium-code
-# Problem 2: Lawfulness
+# Problem 2: Expected behaviour
 
 .fifty-four-left[
 ```scala
@@ -1073,7 +1043,8 @@ trait Optic[From, To] {
 
 val user = User("Julien", 34, Address(12, "Cody Road"))
 
-val userToStreetNumber: Optic[User, Int] = ...
+val userToStreetNumber: Optic[User, Int] =
+  Focus[User](_.address.streetNumber)
 
 val newUser = userToStreetNumber.replace(user, `48`)
 // newUser: User = User("Julien", 34,
@@ -1087,7 +1058,7 @@ val newUser = userToStreetNumber.replace(user, `48`)
 
 ---
 class: medium-code
-# Problem 2: Lawfulness
+# Problem 2: Expected behaviour
 
 .fifty-four-left[
 ```scala
@@ -1099,7 +1070,8 @@ trait Optic[From, To] {
 
 val user = User("Julien", 34, Address(12, "Cody Road"))
 
-val userToStreetNumber: Optic[User, Int] = ...
+val userToStreetNumber: Optic[User, Int] =
+  Focus[User](_.address.streetNumber)
 
 val newUser = userToStreetNumber.replace(user, `48`)
 // newUser: User = User("Julien", 34,
@@ -1126,9 +1098,10 @@ trait Optic[From, To] {
   def modify(from: From, update: To => To): From
 }
 
-val userToStreetNumber: Optic[User, Int] = ...
+val userToStreetNumber: Optic[User, Int] =
+  Focus[User](_.address.streetNumber)
 
-test("get what you set"){
+test(`"get what you set"`){
   `forAll`{ (user: User, newStreetNumber: Int) =>
 
     val newUser = userToStreetNumber
@@ -1150,9 +1123,9 @@ test("get what you set"){
 
 ---
 class: medium-code
-# Problem 2: Lawfulness
+# Problem 2: Expected behaviour
 
-.fifty-four-left[
+.fifty-seven-left[
 ```scala
 trait Optic[From, To] {
   def get(from: From): To
@@ -1160,12 +1133,115 @@ trait Optic[From, To] {
   def modify(from: From, update: To => To): From
 }
 
-val ageAndStreetName: Optic[User, (Int, String)] =
-  Focus[User](_.age)
-    .combine(Focus[User](_.address.streetName))
+val userToStreetNumber: Optic[`User`, Int] =
+  Focus[User](_.address.streetNumber)
 
-ageAndStreetName.get(user)
-// res: (Int, String) = (34, "Cody Road")
+test("get what you set"){
+  forAll{ (`user: User`, newStreetNumber: Int) =>
+
+    val newUser = userToStreetNumber
+      .replace(user, newStreetNumber)
+
+    assert(
+      userToStreetNumber.get(newUser) == newStreetNumber
+    )
+
+  }
+}
+```
+]
+
+.forty-two-left[.center[
+<br><br><br><br><br><br><br>
+## &nbsp&nbsp&nbsp&nbspProperty-Based Testing<br>(PBT)
+]]
+
+---
+class: medium-code
+# Problem 2: Expected behaviour
+
+.fifty-seven-left[
+```scala
+trait Optic[From, To] {
+  def get(from: From): To
+  def replace(from: From, newTo: To): From
+  def modify(from: From, update: To => To): From
+}
+
+val userToStreetNumber: Optic[User, `Int`] =
+  Focus[User](_.address.streetNumber)
+
+test("get what you set"){
+  forAll{ (user: User, `newStreetNumber: Int`) =>
+
+    val newUser = userToStreetNumber
+      .replace(user, newStreetNumber)
+
+    assert(
+      userToStreetNumber.get(newUser) == newStreetNumber
+    )
+
+  }
+}
+```
+]
+
+.forty-two-left[.center[
+<br><br><br><br><br><br><br>
+## &nbsp&nbsp&nbsp&nbspProperty-Based Testing<br>(PBT)
+]]
+
+---
+class: medium-code
+# Problem 2: Expected behaviour
+
+.fifty-seven-left[
+```scala
+trait Optic[From, To] {
+  def get(from: From): To
+  def replace(from: From, newTo: To): From
+  def modify(from: From, update: To => To): From
+}
+
+val userToStreetNumber: Optic[User, Int] =
+  Focus[User](_.address.streetNumber)
+
+test("get what you set"){
+  forAll{ (user: User, newStreetNumber: Int) =>
+
+    val newUser = userToStreetNumber
+      .`replace`(user, newStreetNumber)
+
+    assert(
+      userToStreetNumber.`get`(newUser) == newStreetNumber
+    )
+
+  }
+}
+```
+]
+
+.forty-two-left[.center[
+<br><br><br><br><br><br><br>
+## &nbsp&nbsp&nbsp&nbspProperty-Based Testing<br>(PBT)
+]]
+
+---
+class: medium-code
+# Zip
+
+.fifty-four-left[
+```scala
+trait Optic[From, To] {
+  // get/set/modify
+
+  def `zip`[Other](other: Optic[From, Other])
+    : Optic[From, (To, Other)]
+}
+
+val nameAndStreetNumber: Optic[User, (String, Int)] =
+  Focus[User](_.name)
+    `.zip(Focus[User](_.address.streetNumber))`
 ```
 ]
 
@@ -1175,26 +1251,99 @@ ageAndStreetName.get(user)
 
 ---
 class: medium-code
-# Problem 2: Lawfulness
+# Zip
+
+.fifty-four-left[
+```scala
+trait Optic[`From`, To] {
+  // get/set/modify
+
+  def zip[Other](other: Optic[`From`, Other])
+    : Optic[`From`, (To, Other)]
+}
+
+val nameAndStreetNumber: Optic[User, (String, Int)] =
+  Focus[User](_.name)
+    .zip(Focus[User](_.address.streetNumber))
+```
+]
+
+.forty-five-right[.center[
+<img src="img/diagrams/recursive-json-3.svg" alt="Json tree" style="width:500px;"/>
+]]
+
+---
+class: medium-code
+# Zip
+
+.fifty-four-left[
+```scala
+trait Optic[From, `To`] {
+  // get/set/modify
+
+  def zip[Other](other: Optic[From, `Other`])
+    : Optic[From, (`To, Other`)]
+}
+
+val nameAndStreetNumber: Optic[User, (String, Int)] =
+  Focus[User](_.name)
+    .zip(Focus[User](_.address.streetNumber))
+```
+]
+
+.forty-five-right[.center[
+<img src="img/diagrams/recursive-json-3.svg" alt="Json tree" style="width:500px;"/>
+]]
+
+---
+class: medium-code
+# Zip
 
 .fifty-four-left[
 ```scala
 trait Optic[From, To] {
-  def get(from: From): To
-  def replace(from: From, newTo: To): From
-  def modify(from: From, update: To => To): From
+  // get/set/modify
+
+  def zip[Other](other: Optic[From, Other])
+    : Optic[From, (To, Other)]
 }
 
-val ageAndStreetName: Optic[User, (Int, String)] =
-  Focus[User](_.age)
-    .combine(Focus[User](_.address.streetName))
+val nameAndStreetNumber: Optic[User, (String, Int)] =
+  Focus[User](_.name)
+    .zip(Focus[User](_.address.streetNumber))
 
-ageAndStreetName.get(user)
-// res: (Int, String) = (34, "Cody Road")
+nameAndStreetNumber.`get`(user)
+// res: (Int, String) = ("Julien", 12)
+```
+]
 
-ageAndStreetName.replace(user, (`27, "High Street"`))
+.forty-five-right[.center[
+<img src="img/diagrams/recursive-json-3.svg" alt="Json tree" style="width:500px;"/>
+]]
+
+---
+class: medium-code
+# Zip
+
+.fifty-four-left[
+```scala
+trait Optic[From, To] {
+  // get/set/modify
+
+  def zip[Other](other: Optic[From, Other])
+    : Optic[From, (To, Other)]
+}
+
+val nameAndStreetNumber: Optic[User, (String, Int)] =
+  Focus[User](_.name)
+    .zip(Focus[User](_.address.streetNumber))
+
+nameAndStreetNumber.`get`(user)
+// res: (Int, String) = ("Julien", 12)
+
+nameAndStreetNumber.`replace`(user, (`"Bob", 48`))
 // newUser: User =
-//   User("Julien", `27`, Address(12, `"High Street"`))
+//   User(`"Bob"`, 34, Address(`48`, "Cody Road"))
 ```
 ]
 
@@ -1203,213 +1352,119 @@ ageAndStreetName.replace(user, (`27, "High Street"`))
 ]]
 
 ---
+class: medium-code
+# Zip can break the expected behaviour
+
+<br>
+
+```scala
+trait Optic[From, To] {
+  // get/set/modify
+
+  def zip[Other](other: Optic[From, Other])
+    : Optic[From, (To, Other)]
+}
+
+val `nameTwice`: Optic[User, (String, String)] =
+  Focus[User](_.`name`).zip(Focus[User](_.`name`))
+```
+
+---
+class: medium-code
+# Zip can break the expected behaviour
+
+<br>
+
+```scala
+trait Optic[From, To] {
+  // get/set/modify
+
+  def zip[Other](other: Optic[From, Other])
+    : Optic[From, (To, Other)]
+}
+
+val nameTwice: Optic[User, (String, String)] =
+  Focus[User](_.name).zip(Focus[User](_.name))
+
+val updatedUser = nameTwice.`replace`(user, (`"Bob", "Alice"`))
+// newUser: User =
+//   User(`"Alice"`, 34, Address(12, "Cody Road"))
+```
+
+---
+class: medium-code
+# Zip can break the expected behaviour
+
+<br>
+
+```scala
+trait Optic[From, To] {
+  // get/set/modify
+
+  def zip[Other](other: Optic[From, Other])
+    : Optic[From, (To, Other)]
+}
+
+val nameTwice: Optic[User, (String, String)] =
+  Focus[User](_.name).zip(Focus[User](_.name))
+
+val updatedUser = nameTwice.replace(user, (`"Bob", "Alice"`))
+// newUser: User =
+//   User("Alice", 34, Address(12, "Cody Road"))
+
+nameTwice.get(updatedUser)
+// res: (String, String) = (`"Alice", "Alice"`)
+```
+
+---
 # FP library design principle
 
 <br>
 
-## When using a constructor, you need to verify the behaviour
+## When using a constructor, you .hl2[NEED] to run the tests
 
 ```scala
-val ageOptic = Optic[User, Int](_.age, (newAge, user) => user.copy(age = newAge))
+val name = Optic[User, String](_.name, (newName, user) => user.copy(name = newName))
+
+val age = Optic[User,     Int](_.age , (newAge , user) => user.copy(age  = newAge))
 ```
 
-<br>
-
-## When using a combinator, you DON'T need to check the behaviour
+## When using a combinator, you .hl2[DON'T NEED] to run the tests
 
 ```scala
-address andThen streetNumber
+name zip age
 ```
 
 ---
-# Expected behaviour
 
-<br>
+.center[
+<img src="img/fp-developers-real-world.jpg" alt="Ivory tower" style="width:450px;">
+]
+
+---
+# Solution: Documentation
 
 ```scala
-val nameOptic: Optic[User, String] = ...
-
-test("modify fusion"){
-  forAll{ (user: User, update1: String => String, update2: String => String) =>
-    val step1 = nameOptic.modify(user , `update1`)
-    val step2 = nameOptic.modify(step1, `update2`)
-
-    val both  = nameOptic.modify(user , `update1 andThen update2`)
-
-    step2 shouldEqual both
-  }
+trait Optic[From, To] {
+  // Zip two optics together that starts with the same From type
+  // {{
+  //   val nameOptic: Optic[User, String] = ...
+  //   val ageOptic : Optic[User, Int]    = ...
+  //
+  //   nameOptic.zip(ageOptic).get(user)
+  //   res: (String, Int) = ("Bob", 42)
+  // }}
+  // `WARNING`: This combinator can break the "get what you set" property
+  // if you zip `two intersecting optics`. For example:
+  // {{
+  //   val broken  = nameOptic.zip(nameOptic)
+  //   val newUser = broken.replace(user, ("Bob", "Alice"))
+  //   broken.get(newUser)
+  //   res: ("Alice", "Alice")
+  // }}
+  def zip[Other](other: Optic[From, Other]): Optic[From, (To, Other)]
 }
 ```
-
-
-
----
-class: medium-code
-
-# FP libraries only offer safe combinators
-
-<br>
-
-```scala
-val julien = User(
-  "Julien",
-  Address(12, "E16 4SR", "UK"),
-  Map(
-    "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(2022, 3), 732),
-    "Personal" -> DebitCard("4568 1234 4444 5555", YearMonth.of(2020, 1), 995),
-    "FX"       -> PayPal("julien@fp-tower.com")
-  )
-)
-
-julien.focus(_.filter(_.address.country == "UK")
-  .paymentMethods
-  .*
-  .as[DebitCard]
-  .expirationDate
-).get
-// res: List[YearMonth] = List(2022-03, 2020-01)
-```
-
----
-class: medium-code
-
-# FP libraries only offer safe combinators
-
-<br>
-
-```scala
-val julien = User(
-  "Julien",
-  Address(12, "95350", `"France"`),
-  Map(
-    "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(2022, 3), 732),
-    "Personal" -> DebitCard("4568 1234 4444 5555", YearMonth.of(2020, 1), 995),
-    "FX"       -> PayPal("julien@fp-tower.com")
-  )
-)
-
-julien.focus(_.filter(_.address.country == "UK")
-  .paymentMethods
-  .*
-  .as[DebitCard]
-  .expirationDate
-).get
-// res: List[YearMonth] = `List()`
-```
-
----
-class: medium-code
-
-# FP libraries only offer safe combinators
-
-<br>
-
-```scala
-val julien = User(
-  "Julien",
-  Address(12, "E16 4SR", "UK"),
-  Map(
-    "Business" -> DebitCard("4568 8980 2376 5431", YearMonth.of(2022, 3), 732),
-    "Personal" -> DebitCard("4568 1234 4444 5555", YearMonth.of(2020, 1), 995),
-    "FX"       -> PayPal("julien@fp-tower.com")
-  )
-)
-
-julien.focus(_.paymentMethods
-  .*
-  .as[DebitCard]
-  .filter(_.expirationDate.isAfter(YearMonth.of(2020, 5))) // ❌ break the contract!!!
-  .expirationDate
-).get
-// res: List[YearMonth] = List(`2022-03`)
-```
-
----
-class: medium-code
-
-# FP libraries only offer safe combinators
-
-<br>
-
-```scala
-val optic = Focus[User](_.paymentMethods
-  .*
-  .as[DebitCard]
-  .filter(_.expirationDate.isAfter(YearMonth.of(2020, 5)))
-  .expirationDate
-)
-
-val updated = optic.modify(julien, _.minusYears(2))
-// updated: User = User(
-//  "Julien",
-//  Address(12, "E16 4SR", "UK"),
-//  Map(
-//    "Business" -> DebitCard("4568 8980 2376 5431", `2020-03`, 732),
-//    "Personal" -> DebitCard("4568 1234 4444 5555", 2020-01, 995),
-//    "FX"       -> PayPal("julien@fp-tower.com")
-//  )
-//)
-```
-
----
-class: medium-code
-
-# FP libraries only offer safe combinators
-
-<br>
-
-```scala
-val optic = Focus[User](_.paymentMethods
-  .*
-  .as[DebitCard]
-  .filter(_.expirationDate.isAfter(YearMonth.of(2020, 5)))
-  .expirationDate
-)
-
-val updated1 = optic.modify(julien  , _.minusYears(2))
-val updated2 = optic.modify(updated1, _.plusMonths(3))
-// updated2: User = User(
-//  "Julien",
-//  Address(12, "E16 4SR", "UK"),
-//  Map(
-//    "Business" -> DebitCard("4568 8980 2376 5431", `2020-03`, 732),
-//    "Personal" -> DebitCard("4568 1234 4444 5555", 2020-01, 995),
-//    "FX"       -> PayPal("julien@fp-tower.com")
-//  )
-//)
-```
-
----
-class: medium-code
-
-# Filter breaks fusion property (in some cases)
-
-<br>
-
-```scala
-val optic = Focus[User](_.paymentMethods
-  .*
-  .as[DebitCard]
-  .filter(_.expirationDate.isAfter(YearMonth.of(2020, 5)))
-  .expirationDate
-)
-
-val updated = optic.modify(julien, _.minusYears(2).plusMonths(3))
-// updated: User = User(
-//  "Julien",
-//  Address(12, "E16 4SR", "UK"),
-//  Map(
-//    "Business" -> DebitCard("4568 8980 2376 5431", `2020-06`, 732),
-//    "Personal" -> DebitCard("4568 1234 4444 5555", 2020-01, 995),
-//    "FX"       -> PayPal("julien@fp-tower.com")
-//  )
-//)
-```
-
----
-class: center, middle
-
-# Monocle 3 will be less strict and <br> offer powerful combinators (maybe dangerous)
 
 ---
 # Monocle 3: Focus on user experience
@@ -1418,14 +1473,9 @@ class: center, middle
 
 ## Almighty Focus macro
 
---
-
-## Shortcuts for common patterns: some, each, index
-
-
 ## New powerful (and potentially dangerous) combinators: filter, withDefault
 
---
+## Revamp the documentation
 
 ## And much more...
 
