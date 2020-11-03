@@ -434,14 +434,14 @@ val julien = User(
   "Julien",
   Address(12, "E16 4SR"),
   Map(
-    "Personal" -> PayPal("julien@fp-tower.com"),
-    `"Business"` -> DebitCard("4568 8980 2376 5431", YearMonth.of(`2021, 7`), 995)
+    "Business" -> PayPal("julien@fp-tower.com"),
+    `"Personal"` -> DebitCard("4568 8980 2376 5431", YearMonth.of(`2021, 7`), 995)
   )
 )
 ```
 
 .center[
-## How do we change the .hl2[expiry date] of the .hl2[business] payment method?
+## How do we change the .hl2[expiry date] of the .hl2[personal] payment method?
 ]
 
 ---
@@ -667,6 +667,21 @@ trait Optic[From, `To`] {
 ]
 
 <img src="img/diagrams/user-to-expiration-date-4.svg" alt="User to expiration date " style="width:430px;"/>
+
+---
+# Optics composition
+
+.fifty-two-right[
+<br><br><br><br>
+```scala
+ paymentMethods
+  .andThen(index("Personal"))
+  .andThen(debitCard)
+  .andThen(expirationDate)
+```
+]
+
+<img src="img/diagrams/user-to-expiration-date-5.svg" alt="User to expiration date " style="width:430px;"/>
 
 
 ---
