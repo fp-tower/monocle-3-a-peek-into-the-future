@@ -685,11 +685,6 @@ trait Optic[From, `To`] {
 
 
 ---
-class: center, middle
-
-# Why optics are not popular in Scala?
-
----
 class: medium-code
 
 # Why optics are not popular in Scala?
@@ -1353,7 +1348,7 @@ nameTwice.get(updatedUser)
 ```scala
 val name = Optic[User, String](_.name, (newName, user) => user.copy(name = newName))
 
-val age = Optic[User,     Int](_.age , (newAge , user) => user.copy(age  = newAge))
+val age  = Optic[User,    Int](_.age , (newAge , user) => user.copy(age  = newAge))
 ```
 
 ## When using a combinator, you .hl2[DON'T NEED] to run the tests
@@ -1458,21 +1453,6 @@ trait Optic[From, To] {
   </div>
 
 </div>
-
----
-background-image: url(img/fp-tower/website-background.svg)
-# .white[Come to the dark side we have stickers]
-
-<br>
-.center[
-.forty-seven-left[
-<img src="img/monocle-sticker-blue.png" alt="Monocle blue sticker" style="width:300px;"/>
-]
-
-.forty-seven-right[
-<img src="img/monocle-sticker-white.png" alt="Monocle blue sticker" style="width:300px;"/>
-]
-]
 
 ---
 background-image: url(img/fp-tower/website-background.svg)
