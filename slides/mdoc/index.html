@@ -591,7 +591,6 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
 ```
 
 ---
-class: medium-code
 # Optic
 
 <br>
@@ -602,53 +601,35 @@ trait Optic[`From`, `To`] {
 
   def get(from: From): To
 
-  def replace(from: From, newTo: To): From
-
-  def modify(from: From, update: To => To): From
-
-}
-```
-]
-
----
-class: medium-code
-# Optic
-
-<br>
-
-.fifty-left[
-```scala
-trait Optic[From, To] {
-
-  def get(from: From): To
-
 
   def replace(from: From, newTo: To): From
 
 
   def modify(from: From, update: To => To): From
-
 }
 ```
 ]
+
+--
 
 .forty-seven-right[
 ```scala
-val nameOptic: Optic[`User`, `String`] = ...
+val name: Optic[`User`, `String`] = ...
 
-nameOptic.get(julien)
+name.get(julien)
 // res: String = "Julien"
 
-nameOptic.replace(julien, "Bob")
+name.replace(julien, "Bob")
 // res: User = User(`"Bob"`, Address(12, ...
 
-nameOptic.modify(julien, _.toUpperCase)
-// res: User = User(`"JULIEN"`, Address(12, ...
+name.modify(julien, _.toUpperCase)
+// res: User = User(`"JULIEN"`, Address(12, .
 ```
 ]
 
 ---
-# Optic.hl2[(s)]
+# Optics: Lens, Optional, Traversal, Prism, Iso, ...
+
 
 <br>
 
@@ -663,12 +644,6 @@ trait Optic[From, To] {
 
 }
 ```
-
-<br>
-
-.center[
-## Fancy names: Lens, Optional, Traversal, Prism, Iso, ...
-]
 
 ---
 # Optics composition
@@ -686,6 +661,21 @@ trait Optic[From, `To`] {
 .center[
 <img src="img/diagrams/optics-composition.svg" alt="Optics composition" style="width:800px;"/>
 ]
+
+---
+# Optics composition
+
+.fifty-two-right[
+<br><br><br><br>
+```scala
+ paymentMethods
+  .andThen(index("Personal"))
+  .andThen(debitCard)
+  .andThen(expirationDate)
+```
+]
+
+<img src="img/diagrams/user-to-expiration-date-5.svg" alt="User to expiration date " style="width:430px;"/>
 
 ---
 # Optics composition
@@ -749,22 +739,6 @@ trait Optic[From, `To`] {
 <img src="img/diagrams/user-to-expiration-date-4.svg" alt="User to expiration date " style="width:430px;"/>
 
 ---
-# Optics composition
-
-.fifty-two-right[
-<br><br><br><br>
-```scala
- paymentMethods
-  .andThen(index("Personal"))
-  .andThen(debitCard)
-  .andThen(expirationDate)
-```
-]
-
-<img src="img/diagrams/user-to-expiration-date-5.svg" alt="User to expiration date " style="width:430px;"/>
-
-
----
 class: medium-code
 
 # Why optics are not popular in Scala?
@@ -821,38 +795,19 @@ class: medium-code
 <br>
 
 ```scala
-val paymentMethods     : Optic[User, Map[String, PaymentMethod]] = ...
-def index(name: String): Optic[Map[String, PaymentMethod], PaymentMethod] = ...
-val debitCard          : Optic[PaymentMethod, DebitCard] = ...
-val expirationDate     : Optic[DebitCard, YearMonth] = ...
+val paymentMethods: Optic[User, Map[String, PaymentMethod]] = ...
+val debitCard     : Optic[PaymentMethod, DebitCard] = ...
+val expirationDate: Optic[DebitCard, YearMonth] = ...
 ```
 
-<br>
-
+.fifty-left[
 ```scala
-def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
-  paymentMethods
-    .andThen(index(paymentName))
-    .andThen(debitCard)
-    .andThen(expirationDate)
-    .replace(user, newExpiry)
+def index[K, V](key: K): Optic[Map[K, V], V] = ...
 ```
+]
 
----
-class: medium-code
 
-# Problem #1: Optics creation
-
-<br>
-
-```scala
-val paymentMethods     : Optic[User, Map[String, PaymentMethod]] = ...
-def `index`(name: String): Optic[Map[String, PaymentMethod], PaymentMethod] = ...
-val debitCard          : Optic[PaymentMethod, DebitCard] = ...
-val expirationDate     : Optic[DebitCard, YearMonth] = ...
-```
-
-<br>
+<br><br><br><br>
 
 ```scala
 def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
@@ -876,7 +831,14 @@ val debitCard     : Optic[PaymentMethod, DebitCard] = ...
 val expirationDate: Optic[DebitCard, YearMonth] = ...
 ```
 
-<br>
+.fifty-left[
+```scala
+*def index[K, V](key: K): Optic[Map[K, V], V] = ...
+```
+]
+
+
+<br><br><br><br>
 
 ```scala
 def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
@@ -927,9 +889,9 @@ class: medium-code
 ```scala
 import monocle.macros.{GenLens, GenPrism}
 
-val paymentMethods = GenLens[User](_.paymentMethods)
-val debitCard      = GenPrism[PaymentMethod, DebitCard]
-val expirationDate = GenLens[DebitCard](_.expirationDate)
+val paymentMethods = Gen`Lens`[User](_.paymentMethods)
+val debitCard      = Gen`Prism`[PaymentMethod, DebitCard]
+val expirationDate = Gen`Lens`[DebitCard](_.expirationDate)
 ```
 
 ---
