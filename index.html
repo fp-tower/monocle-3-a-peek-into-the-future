@@ -357,25 +357,10 @@ def updateExpiry(user: User, newExpiry: YearMonth): User =
 
 ```scala
 def updateExpiry(user: User, newExpiry: YearMonth): User =
-  user.copy(paymentMethod =
+  user.copy(`paymentMethod` =
     user.paymentMethod match {
       case card  : DebitCard => card.copy(expirationDate = newExpiry)
-      case paypal: PayPal    => `???`
-    }
-  )
-```
-
----
-# Example #2: Enumeration
-
-<br>
-
-```scala
-def updateExpiry(user: User, newExpiry: YearMonth): User =
-  user.copy(`paymentMethod = `
-    user.paymentMethod match {
-      case card  : DebitCard => card.copy(expirationDate = newExpiry)
-      case paypal: PayPal    => `paypal` // do nothing
+      case paypal: PayPal    => ???
     }
   )
 ```
@@ -389,8 +374,23 @@ def updateExpiry(user: User, newExpiry: YearMonth): User =
 def updateExpiry(user: User, newExpiry: YearMonth): User =
   user.copy(paymentMethod =
     user.paymentMethod match {
-      case card  : DebitCard => card.copy(expirationDate = newExpiry)
-      case paypal: PayPal    => paypal
+      case card: DebitCard => card.copy(expirationDate = newExpiry)
+      case _   : PayPal    => user.paymentMethod // do nothing
+    }
+  )
+```
+
+---
+# Example #2: Enumeration
+
+<br>
+
+```scala
+def updateExpiry(user: User, newExpiry: YearMonth): User =
+  user.copy(paymentMethod =
+    user.paymentMethod match {
+      case card: DebitCard => card.copy(expirationDate = newExpiry)
+      case _   : PayPal    => user.paymentMethod // do nothing
     }
   )
 ```
@@ -536,14 +536,14 @@ trait Optic[`From`, `To`] {
 ```scala
 val name: Optic[`User`, `String`] = ...
 
-name.get(julien)
+name.get(user)
 // res: String = "Julien"
 
-name.replace(julien, "Bob")
+name.replace(user, "Bob")
 // res: User = User(`"Bob"`, Address(12, ...
 
-name.modify(julien, _.toUpperCase)
-// res: User = User(`"JULIEN"`, Address(12, .
+name.modify(user, _.toUpperCase)
+// res: User = User(`"JULIEN"`, Address(12, ...
 ```
 ]
 
@@ -832,7 +832,7 @@ import monocle.Focus
 Focus[User](_.address.streetNumber)
 // res: Lens[User, Int]
 
-Focus[User](_.paymentMethods.`index("Business")`.expirationDate)
+Focus[User](_.paymentMethods.`index("Personal")`.expirationDate)
 // res: `Optional`[User, YearMonth]
 ```
 
@@ -847,7 +847,7 @@ import monocle.Focus
 Focus[User](_.address.streetNumber)
 // res: Lens[User, Int]
 
-Focus[User](_.paymentMethods.index("Business").expirationDate)
+Focus[User](_.paymentMethods.index("Personal").expirationDate)
 // res: Optional[User, YearMonth]
 
 Focus[User](_.paymentMethods.`*`.cardNumber)
@@ -865,7 +865,7 @@ import monocle.Focus
 Focus[User](_.address.streetNumber)
 // res: Lens[User, Int]
 
-Focus[User](_.paymentMethods.index("Business").expirationDate)
+Focus[User](_.paymentMethods.index("Personal").expirationDate)
 // res: Optional[User, YearMonth]
 
 Focus[User](_.paymentMethods.*.cardNumber)
@@ -888,7 +888,7 @@ Focus[User](_.paymentMethods.*.cardNumber)
 ---
 class: center, middle
 
-# Expected behaviour or<br><br>Contract
+# Expected behaviour<br><br>Contract
 
 ---
 class: medium-code
@@ -985,7 +985,7 @@ trait Optic[From, To] {
 val userToStreetNumber: Optic[User, Int] =
   Focus[User](_.address.streetNumber)
 
-test(`"get what you set"`){
+test(`"get what you replace"`){
   `forAll`{ (user: User, newStreetNumber: Int) =>
 
     val newUser = userToStreetNumber
@@ -1020,7 +1020,7 @@ trait Optic[From, To] {
 val userToStreetNumber: Optic[`User`, Int] =
   Focus[User](_.address.streetNumber)
 
-test("get what you set"){
+test("get what you replace"){
   forAll{ (`user: User`, newStreetNumber: Int) =>
 
     val newUser = userToStreetNumber
@@ -1055,7 +1055,7 @@ trait Optic[From, To] {
 val userToStreetNumber: Optic[User, `Int`] =
   Focus[User](_.address.streetNumber)
 
-test("get what you set"){
+test("get what you replace"){
   forAll{ (user: User, `newStreetNumber: Int`) =>
 
     val newUser = userToStreetNumber
@@ -1090,7 +1090,7 @@ trait Optic[From, To] {
 val userToStreetNumber: Optic[User, Int] =
   Focus[User](_.address.streetNumber)
 
-test("get what you set"){
+test("get what you replace"){
   forAll{ (user: User, newStreetNumber: Int) =>
 
     val newUser = userToStreetNumber
@@ -1338,8 +1338,8 @@ trait Optic[From, To] {
   //   nameOptic.zip(ageOptic).get(user)
   //   res: (String, Int) = ("Bob", 42)
   // }}
-  // `WARNING`: This combinator can break the "get what you set" property
-  // if you zip `two intersecting optics`. For example:
+  // `WARNING: This combinator can break the "get what you replace" property`
+  // `if you zip two intersecting optics`. For example:
   // {{
   //   val broken  = nameOptic.zip(nameOptic)
   //   val newUser = broken.replace(user, ("Bob", "Alice"))
@@ -1415,26 +1415,6 @@ trait Optic[From, To] {
   </div>
 
 </div>
-
----
-background-image: url(img/fp-tower/website-background.svg)
-
-class: center, middle, white
-
-.title[Thank you]
-
----
-# Foundations of Functional Programming in Scala
-
-<br>
-
-## 1. Self-paced online course
-
-## 2. Practical side of Functional Programming
-
-## 3. No prerequisites other than basic Scala syntax
-
-## 4. Early Access Program: ~40% content available
 
 ---
 background-image: url(img/fp-tower/website-background.svg)
