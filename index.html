@@ -806,6 +806,11 @@ val debitCard      = Gen`Prism`[PaymentMethod, DebitCard]
 val expirationDate = Gen`Lens`[DebitCard](_.expirationDate)
 ```
 
+<br>
+.center[
+## It still requires to know the difference between optics types
+]
+
 ---
 background-image: url(img/lotr-focus.jpg)
 
@@ -1108,29 +1113,6 @@ test("get what you replace"){
 .forty-two-left[.center[
 <br><br><br><br><br><br><br>
 ## &nbsp&nbsp&nbsp&nbspProperty-Based Testing<br>(PBT)
-]]
-
----
-class: medium-code
-# Zip
-
-.fifty-four-left[
-```scala
-trait Optic[From, To] {
-  // get/set/modify
-
-  def `zip`[Other](other: Optic[From, Other])
-    : Optic[From, (To, Other)]
-}
-
-val nameAndStreetNumber: Optic[User, (String, Int)] =
-  Focus[User](_.name)
-    `.zip(Focus[User](_.address.streetNumber))`
-```
-]
-
-.forty-five-right[.center[
-<img src="img/diagrams/recursive-json-3.svg" alt="Json tree" style="width:500px;"/>
 ]]
 
 ---
