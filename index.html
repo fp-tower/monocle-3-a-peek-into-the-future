@@ -556,7 +556,7 @@ name.modify(user, _.toUpperCase)
 ```scala
 trait Optic[From, To] {
 
-  def get(from: From): To // Option[To] or List[To]
+  def get(from: From): `To` // `Option[To]` or `List[To]`
 
   def replace(from: From, newTo: To): From
 
@@ -604,9 +604,9 @@ trait Optic[From, `To`] {
 <br><br><br><br>
 ```scala
  `paymentMethods`
-   .andThen(index("Personal"))
-   .andThen(debitCard)
-   .andThen(expirationDate)
+  .andThen(index("Personal"))
+  .andThen(debitCard)
+  .andThen(expirationDate)
 ```
 ]
 
@@ -712,9 +712,9 @@ val debitCard     : Optic[PaymentMethod, DebitCard] = ...
 val expirationDate: Optic[DebitCard, YearMonth] = ...
 ```
 
-.fifty-left[
+.sixty-seven-left[
 ```scala
-def index[K, V](key: K): Optic[Map[K, V], V] = ...
+def index[Key, Value](key: Key): Optic[Map[Key, Value], Value] = ...
 ```
 ]
 
@@ -743,9 +743,9 @@ val debitCard     : Optic[PaymentMethod, DebitCard] = ...
 val expirationDate: Optic[DebitCard, YearMonth] = ...
 ```
 
-.fifty-left[
+.sixty-seven-left[
 ```scala
-*def index[K, V](key: K): Optic[Map[K, V], V] = ...
+*def index[Key, Value](key: Key): Optic[Map[Key, Value], Value] = ...
 ```
 ]
 
@@ -994,111 +994,6 @@ test(`"get what you replace"`){
   `forAll`{ (user: User, newStreetNumber: Int) =>
 
     val newUser = userToStreetNumber
-      .replace(user, newStreetNumber)
-
-    assert(
-      userToStreetNumber.get(newUser) == newStreetNumber
-    )
-
-  }
-}
-```
-]
-
-.forty-two-left[.center[
-<br><br><br><br><br><br><br>
-## &nbsp&nbsp&nbsp&nbspProperty-Based Testing<br>(PBT)
-]]
-
----
-class: medium-code
-# Problem 2: Expected behaviour
-
-.fifty-seven-left[
-```scala
-trait Optic[From, To] {
-  def get(from: From): To
-  def replace(from: From, newTo: To): From
-  def modify(from: From, update: To => To): From
-}
-
-val userToStreetNumber: Optic[`User`, Int] =
-  Focus[User](_.address.streetNumber)
-
-test("get what you replace"){
-  forAll{ (`user: User`, newStreetNumber: Int) =>
-
-    val newUser = userToStreetNumber
-      .replace(user, newStreetNumber)
-
-    assert(
-      userToStreetNumber.get(newUser) == newStreetNumber
-    )
-
-  }
-}
-```
-]
-
-.forty-two-left[.center[
-<br><br><br><br><br><br><br>
-## &nbsp&nbsp&nbsp&nbspProperty-Based Testing<br>(PBT)
-]]
-
----
-class: medium-code
-# Problem 2: Expected behaviour
-
-.fifty-seven-left[
-```scala
-trait Optic[From, To] {
-  def get(from: From): To
-  def replace(from: From, newTo: To): From
-  def modify(from: From, update: To => To): From
-}
-
-val userToStreetNumber: Optic[User, `Int`] =
-  Focus[User](_.address.streetNumber)
-
-test("get what you replace"){
-  forAll{ (user: User, `newStreetNumber: Int`) =>
-
-    val newUser = userToStreetNumber
-      .replace(user, newStreetNumber)
-
-    assert(
-      userToStreetNumber.get(newUser) == newStreetNumber
-    )
-
-  }
-}
-```
-]
-
-.forty-two-left[.center[
-<br><br><br><br><br><br><br>
-## &nbsp&nbsp&nbsp&nbspProperty-Based Testing<br>(PBT)
-]]
-
----
-class: medium-code
-# Problem 2: Expected behaviour
-
-.fifty-seven-left[
-```scala
-trait Optic[From, To] {
-  def get(from: From): To
-  def replace(from: From, newTo: To): From
-  def modify(from: From, update: To => To): From
-}
-
-val userToStreetNumber: Optic[User, Int] =
-  Focus[User](_.address.streetNumber)
-
-test("get what you replace"){
-  forAll{ (user: User, newStreetNumber: Int) =>
-
-    val newUser = userToStreetNumber
       .`replace`(user, newStreetNumber)
 
     assert(
@@ -1116,8 +1011,27 @@ test("get what you replace"){
 ]]
 
 ---
+# FP library design principle
+
+<br>
+
+## When using a constructor, you .hl2[NEED] to run the tests
+
+```scala
+val address      = Optic[User, Address](_.address     , (newOne, user)     => user.copy(address = newOne))
+
+val streetNumber = Optic[Address, Int] (_.streetNumber, (newOne , address) => address.copy(streetNumber = newOne))
+```
+
+## When using a combinator, you .hl2[DON'T NEED] to run the tests
+
+```scala
+address andThen streetNumber
+```
+
+---
 class: medium-code
-# Zip
+# Zip can break the expected behaviour
 
 .fifty-four-left[
 ```scala
@@ -1140,7 +1054,7 @@ val nameAndStreetNumber: Optic[User, (String, Int)] =
 
 ---
 class: medium-code
-# Zip
+# Zip can break the expected behaviour
 
 .fifty-four-left[
 ```scala
@@ -1163,7 +1077,7 @@ val nameAndStreetNumber: Optic[User, (String, Int)] =
 
 ---
 class: medium-code
-# Zip
+# Zip can break the expected behaviour
 
 .fifty-four-left[
 ```scala
@@ -1189,7 +1103,7 @@ nameAndStreetNumber.`get`(user)
 
 ---
 class: medium-code
-# Zip
+# Zip can break the expected behaviour
 
 .fifty-four-left[
 ```scala
@@ -1231,8 +1145,9 @@ trait Optic[From, To] {
     : Optic[From, (To, Other)]
 }
 
-val `nameTwice`: Optic[User, (String, String)] =
-  Focus[User](_.`name`).zip(Focus[User](_.`name`))
+val `name`: Optic[User, String] = Focus[User](_.name)
+
+val nameTwice: Optic[User, (String, String)] = `name`.zip(`name`)
 ```
 
 ---
@@ -1249,8 +1164,9 @@ trait Optic[From, To] {
     : Optic[From, (To, Other)]
 }
 
-val nameTwice: Optic[User, (String, String)] =
-  Focus[User](_.name).zip(Focus[User](_.name))
+val name: Optic[User, String] = Focus[User](_.name)
+
+val nameTwice: Optic[User, (String, String)] = name.zip(name)
 
 val updatedUser = nameTwice.`replace`(user, (`"Bob", "Alice"`))
 // newUser: User =
@@ -1271,8 +1187,9 @@ trait Optic[From, To] {
     : Optic[From, (To, Other)]
 }
 
-val nameTwice: Optic[User, (String, String)] =
-  Focus[User](_.name).zip(Focus[User](_.name))
+val name: Optic[User, String] = Focus[User](_.name)
+
+val nameTwice: Optic[User, (String, String)] = name.zip(name)
 
 val updatedUser = nameTwice.replace(user, (`"Bob", "Alice"`))
 // newUser: User =
@@ -1280,25 +1197,6 @@ val updatedUser = nameTwice.replace(user, (`"Bob", "Alice"`))
 
 nameTwice.get(updatedUser)
 // res: (String, String) = (`"Alice", "Alice"`)
-```
-
----
-# FP library design principle
-
-<br>
-
-## When using a constructor, you .hl2[NEED] to run the tests
-
-```scala
-val name = Optic[User, String](_.name, (newName, user) => user.copy(name = newName))
-
-val age  = Optic[User,    Int](_.age , (newAge , user) => user.copy(age  = newAge))
-```
-
-## When using a combinator, you .hl2[DON'T NEED] to run the tests
-
-```scala
-name zip age
 ```
 
 ---
