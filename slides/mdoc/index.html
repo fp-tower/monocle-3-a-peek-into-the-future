@@ -1181,7 +1181,7 @@ val nameAndStreetNumber: Optic[User, (String, Int)] =
     .zip(Focus[User](_.address.streetNumber))
 
 nameAndStreetNumber.`get`(user)
-// res: (Int, String) = ("Julien", 12)
+// res: (String, Int) = ("Julien", 12)
 ```
 ]
 
@@ -1207,7 +1207,7 @@ val nameAndStreetNumber: Optic[User, (String, Int)] =
     .zip(Focus[User](_.address.streetNumber))
 
 nameAndStreetNumber.`get`(user)
-// res: (Int, String) = ("Julien", 12)
+// res: (String, Int) = ("Julien", 12)
 
 nameAndStreetNumber.`replace`(user, (`"Bob", 48`))
 // newUser: User =
