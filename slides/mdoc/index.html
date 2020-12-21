@@ -637,10 +637,12 @@ name.modify(user, _.toUpperCase)
 
 <br>
 
-```scala mdoc:reset:silent
+```scala
 trait Optic[From, To] {
 
-  def get(from: From): `To` // `Option[To]` or `List[To]`
+  def get      (from: From): `       To ` // Lens, Iso
+  def getOption(from: From): `Option[To]` // Prism, Optional
+  def getAll   (from: From): `  List[To]` // Fold, Traversal
 
   def replace(from: From, newTo: To): From
 
@@ -794,7 +796,151 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
 ---
 class: medium-code
 
-# Problem #1: Optics creation
+# Problem #1: Multiple compose methods
+
+<br>
+
+```scala
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  paymentMethods
+    .compose`Optional`(index(paymentName))
+    .compose`Prism`(debitCard)
+    .compose`Lens`(expirationDate)
+    .replace(user, newExpiry)
+```
+
+## Monocle 2: one compose method per type of optic
+
+```scala
+trait Optic[From, To] {
+  def compose`Optional`[Next](other: `Optional`[To, Next]): Optic[From, Next]
+  def compose`Prism`   [Next](other: `Prism`   [To, Next]): Optic[From, Next]
+  def compose`Lens`    [Next](other: `Lens`    [To, Next]): Optic[From, Next]
+  ...
+}
+```
+
+---
+class: medium-code
+
+# Solution: Overloaded methods
+
+<br>
+
+```scala
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  paymentMethods
+    .andThen(index(paymentName))
+    .andThen(debitCard)
+    .andThen(expirationDate)
+    .replace(user, newExpiry)
+```
+
+<br>
+
+```scala
+trait Optic[From, To] {
+  def andThen[Next](other: Optional[To, Next]): Optic[From, Next]
+  def andThen[Next](other: Prism   [To, Next]): Optic[From, Next]
+  def andThen[Next](other: Lens    [To, Next]): Optic[From, Next]
+  ...
+}
+```
+
+---
+class: medium-code
+
+# Problem: Type inference hates overloads
+
+<br>
+
+```scala
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  paymentMethods
+    .`andThen(index(paymentName))`
+    .andThen(debitCard)
+    .andThen(expirationDate)
+    .replace(user, newExpiry)
+```
+
+<br>
+
+```scala
+// error: ambiguous implicit values
+//        both method `mapIndex` of type ... and method `listMapIndex` of type ...
+//        match expected type `Index[From, String, To]`
+```
+
+---
+class: medium-code
+
+## Solution 1: Type annotation
+
+```scala
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  paymentMethods
+    .andThen(index(paymentName)`: Optional[Map[String, PaymentMethod], PaymentMethod]`)
+    .andThen(debitCard)
+    .andThen(expirationDate)
+    .replace(user, newExpiry)
+```
+
+--
+
+## Solution 2: composeOptional, composePrism, composeLens, ...
+
+--
+
+## Solution 3: Wait for Scala 3 (mostly)
+
+---
+class: medium-code
+
+# Monocle 3: Add shortcuts
+
+<br>
+
+```scala
+trait Optic[From, To] {
+  def index[Key, Next](key: Key) = andThen(index(key): Optional[To, Next])
+}
+// simplified signature
+```
+
+--
+<br>
+
+```scala
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  paymentMethods
+    .`index(paymentName)`
+    .andThen(debitCard)
+    .andThen(expirationDate)
+    .replace(user, newExpiry)
+```
+
+---
+class: medium-code
+
+# Better discoverability and documentation
+
+<br>
+
+```scala
+trait Optic[From, To] {
+  def index[Key, Next](key: Key) = andThen(index(key): Optional[To, Next])
+}
+// simplified signature
+```
+
+.center[
+<img src="img/index-doc.png" alt="Javadoc" style="width:800px;"/>
+]
+
+---
+class: medium-code
+
+# Problem #2: Optics creation
 
 <br>
 
@@ -825,7 +971,7 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
 ---
 class: medium-code
 
-# Problem #1: Optics creation
+# Problem #2: Optics creation
 
 <br>
 
@@ -856,7 +1002,7 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
 ---
 class: medium-code
 
-# Problem #1: Optics creation
+# Problem #2: Optics creation
 
 <br>
 
@@ -976,7 +1122,7 @@ Focus[User](_.paymentMethods.*.cardNumber)
 ]
 
 ---
-# Problem 2: Lawfulness
+# Problem 3: Lawfulness
 
 .center[
 <img src="img/police.jpg" alt="Police" style="width:500px;"/>
@@ -989,7 +1135,7 @@ class: center, middle
 
 ---
 class: medium-code
-# Problem 2: Expected behaviour
+# Problem 3: Expected behaviour
 
 .fifty-four-left[
 ```scala
@@ -1012,7 +1158,7 @@ val userToStreetNumber: Optic[User, Int] =
 
 ---
 class: medium-code
-# Problem 2: Expected behaviour
+# Problem 3: Expected behaviour
 
 .fifty-four-left[
 ```scala
@@ -1039,7 +1185,7 @@ val newUser = userToStreetNumber.replace(user, `48`)
 
 ---
 class: medium-code
-# Problem 2: Expected behaviour
+# Problem 3: Expected behaviour
 
 .fifty-four-left[
 ```scala
@@ -1069,7 +1215,7 @@ val newStreetNumber = userToStreetNumber.get(newUser)
 
 ---
 class: medium-code
-# Problem 2: Expected behaviour
+# Problem 3: Expected behaviour
 
 .fifty-seven-left[
 ```scala
@@ -1327,11 +1473,11 @@ trait Optic[From, To] {
 
 <br>
 
+## Better discoverability and documentation
+
 ## Almighty Focus macro
 
 ## New powerful (and potentially dangerous) combinators: filter, withDefault
-
-## Revamp the documentation
 
 ## And much more...
 
@@ -1393,11 +1539,60 @@ background-image: url(img/fp-tower/website-background.svg)
 
 class: center, middle, white
 
-# .white[www.fp-tower.com/courses/foundations]
+.title[Monocle 4]
 
-.title[Coupon: SBTB15]
-## .white[15% discount until 19th of November]
+---
+# Error reporting
 
+<br>
+
+```scala mdoc:reset:invisible
+import java.time.YearMonth
+
+case class User(name: String, address: Address, paymentMethods: Map[String, PaymentMethod])
+
+case class Address(streetNumber: Int, postCode: String)
+
+sealed trait PaymentMethod
+case class DebitCard(cardNumber: String, expirationDate: YearMonth, securityCode: Int) extends PaymentMethod
+case class PayPal(email: String) extends PaymentMethod
+```
+
+```scala mdoc
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  user.copy(paymentMethods =
+    user.paymentMethods.get(paymentName) match {
+      case None | Some(_: PayPal) => user.paymentMethods
+      case Some(card: DebitCard)  =>
+        val updatedCard = card.copy(expirationDate = newExpiry)
+        user.paymentMethods.updated(paymentName, updatedCard)
+    }
+  )
+```
+
+
+.small-code[
+.forty-seven-left[
+## Invalid key
+```scala
+updateExpiry(julien, `"MasterCard"`, newExpiry)
+```
+]
+
+.forty-seven-right[
+## Invalid payment method
+```scala
+updateExpiry(julien, `"Business"`, newExpiry)
+```
+]
+]
+
+---
+# Error Reporting
+
+.center[
+<img src="img/diagrams/user-to-expiration-date-error.svg" alt="User to expiration date " style="width:600px;"/>
+]
 
  </textarea>
     <script src="https://remarkjs.com/downloads/remark-latest.min.js">
