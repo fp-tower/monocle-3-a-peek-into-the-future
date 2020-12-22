@@ -1453,46 +1453,290 @@ class: center, middle, white
 
 .title[Monocle 4]
 
+
+
 ---
-# Error reporting
+# Error reporting: Missing key
+
+.fifty-two-right[
+<br><br><br>
+```scala
+ paymentMethods
+  .`andThen(index("Personal"))`
+  .andThen(debitCard)
+  .andThen(expirationDate)
+```
+
+.center[
+### There is a no "Personal" payment method
+]
+]
+
+<br>
+<img src="img/diagrams/user-to-expiration-date-error-1.svg" alt="User to expiration date " style="width:500px;"/>
+
+
+
+---
+# Error reporting: Invalid payment method
+
+.fifty-two-right[
+<br><br><br>
+```scala
+ paymentMethods
+  .andThen(index("Personal"))
+  .`andThen(debitCard)`
+  .andThen(expirationDate)
+```
+
+.center[
+### There is a "Personal" payment method but it is a Paypal account
+]
+]
+
+<br>
+<img src="img/diagrams/user-to-expiration-date-error-2.svg" alt="User to expiration date " style="width:500px;"/>
+
+---
+class: medium-code
+
+# Monocle 2 & 3: replaceOption, modifyOption
 
 <br>
 
-
 ```scala
-def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
-  user.copy(paymentMethods =
-    user.paymentMethods.get(paymentName) match {
-      case None | Some(_: PayPal) => user.paymentMethods
-      case Some(card: DebitCard)  =>
-        val updatedCard = card.copy(expirationDate = newExpiry)
-        user.paymentMethods.updated(paymentName, updatedCard)
-    }
-  )
+val businessExpirationDate = paymentMethods
+  .andThen(index("Personal"))
+  .andThen(debitCard)
+  .andThen(expirationDate)
+
+businessExpirationDate.`modifyOption`(julien, `_.plusYears(2)`)
+// res: Option[User] = Some(User(
+//   "Julien",
+//   Address(12, "E16 4SR"),
+//   Map(
+//     "Business" -> PayPal("julien@fp-tower.com"),
+//     "Personal" -> DebitCard("4568 8980 2376 5431", 2024-04), 995)
+//   )
+// ))
 ```
 
+---
+class: medium-code
 
-.small-code[
-.forty-seven-left[
-## Invalid key
+# Monocle 2 & 3: replaceOption, modifyOption
+
+<br>
+
 ```scala
-updateExpiry(julien, `"MasterCard"`, newExpiry)
+val businessExpirationDate = paymentMethods
+  .andThen(index("Personal"))
+  .andThen(debitCard)
+  .andThen(expirationDate)
+
+businessExpirationDate.modifyOption(julien, _.plusYears(2))
+// res: Option[User] = `Some`(User(
+//   "Julien",
+//   Address(12, "E16 4SR"),
+//   Map(
+//     "Business" -> PayPal("julien@fp-tower.com"),
+//     "Personal" -> DebitCard("4568 8980 2376 5431", `2024`-04), 995)
+//   )
+// ))
+```
+
+---
+class: small-code
+
+# Monocle 2 & 3: replaceOption, modifyOption
+
+
+.forty-seven-left[
+## Missing key
+
+```scala
+val bob = User(
+  "Bob",
+  Address(12, "E16 4SR"),
+  `Map.empty`
+)
+
+businessExpirationDate.modifyOption(
+  bob,
+  _.plusYears(2)
+)
+// res: Option[User] = `None`
 ```
 ]
 
 .forty-seven-right[
 ## Invalid payment method
+
 ```scala
-updateExpiry(julien, `"Business"`, newExpiry)
+val anna = User(
+  "Anna",
+  Address(12, "E16 4SR"),
+  `Map("Personal" -> PayPal("anna@fp-tower.com"))`
+)
+
+businessExpirationDate.modifyOption(
+  anna,
+  _.plusYears(2)
+)
+// res: Option[User] = `None`
 ```
-]
 ]
 
 ---
-# Error Reporting
+class: small-code
+
+# Solution: use Either
+
+
+.forty-seven-left[
+## Missing key
+
+```scala
+val bob = User(
+  "Bob",
+  Address(12, "E16 4SR"),
+  Map.empty
+)
+
+businessExpirationDate.modifyError(
+  bob,
+  _.plusYears(2)
+)
+// res: Either[Error, User] =
+  `Left(Missing key personal in field paymentMethods)`
+```
+]
+
+.forty-seven-right[
+## Invalid payment method
+
+```scala
+val anna = User(
+  "Anna",
+  Address(12, "E16 4SR"),
+  Map("Personal" -> PayPal("anna@fp-tower.com"))
+)
+
+businessExpirationDate.modifyOption(
+  anna,
+  _.plusYears(2)
+)
+// res: Either[Error, User] =
+  `Left(Invalid PaymentMethod, expected: DebitCard, found: Paypal)`
+```
+]
+
+---
+class: center, middle
+
+# Either[???, User]
+
+---
+class: center, middle
+
+# Either[String, User] ?
+
+# Either[Throwable, User] ?
+
+---
+class: medium-code
+
+# Monocle 4
+
+<br>
+
+```scala
+trait Optic[`+Error`, From, To] {
+  def modifyError(from: From, update: To => To): Either[`Error`, From]
+}
+```
+
+<br>
 
 .center[
-<img src="img/diagrams/user-to-expiration-date-error.svg" alt="User to expiration date " style="width:600px;"/>
+## Similar to `E` type parameter in ZIO
+]
+
+---
+class: medium-code
+
+# Monocle 4
+
+<br>
+
+```scala
+trait Optic[`+Error`, From, To] {
+  def modifyError(from: From, update: To => To): Either[`Error`, From]
+
+  def andThen[Next](other: Optic[`Error`, To, Next]): Optic[`Error`, From, Next]
+}
+```
+
+---
+class: medium-code
+
+# Monocle 4
+
+<br>
+
+```scala
+trait Optic[+Error, From, To] {
+  def modifyError(from: From, update: To => To): Either[Error, From]
+
+  def andThen[Next](other: Optic[Error, To, Next]): Optic[Error, From, Next]
+}
+```
+
+<br>
+
+```scala
+val optic1: Optic[`String`   , User         , PaymentMethod] = ...
+val optic2: Optic[`Throwable`, PaymentMethod, YearMonth    ] = ...
+```
+
+--
+
+```scala
+optic1.andThen(optic2)
+// res: Optic[`Any`, User, YearMonth]
+```
+
+---
+class: medium-code
+
+# Monocle 4: variance and union types
+
+<br>
+
+```scala
+trait Optic[+Error, From, To] {
+  def modifyError(from: From, update: To => To): Either[Error, From]
+
+  def andThen[`E1`, Next](other: Optic[`E1`, To, Next]): Optic[`E1 | Error`, From, Next]
+}
+```
+
+<br>
+
+```scala
+val optic1: Optic[String   , User         , PaymentMethod] = ...
+val optic2: Optic[Throwable, PaymentMethod, YearMonth    ] = ...
+```
+
+```scala
+optic1.andThen(optic2)
+// res: Optic[`String | Throwable`, User, YearMonth]
+```
+
+--
+
+.center[
+### Introducing error reporting in optics (https://blog.fp-tower.com)
 ]
 
  </textarea>
