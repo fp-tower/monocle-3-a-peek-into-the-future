@@ -7,22 +7,23 @@
     <!-- Primary Meta Tags -->
     <title>Monocle 3: A peek into the future</title>
     <meta name="title" content="Monocle 3: A peek into the future">
-    <meta name="description" content="Optics is a popular topic among library authors; they exist in at least four flavours in Scala: Monocle, Quicklens, Shapeless and Scalaz. Yet end-user applications rarely use them.
-In this talk, I will discuss the shortcomings of Monocle, a library I created six years ago. And then, I will present game-changing updates that are coming for the next version of Monocle, specifically for Dotty/Scala 3.">
+    <meta name="description" content="Optics is a popular topic among library authors; they exist in at least four flavours in Scala: Monocle, Quicklens, Shapeless and Targetfu. However, we rarely see optics in real world code bases.
+Why is that? Why are optics not popular in Scala?">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://metatags.io/">
     <meta property="og:title" content="Monocle 3: A peek into the future">
-    <meta property="og:description" content="Optics is a popular topic among library authors; they exist in at least four flavours in Scala: Monocle, Quicklens, Shapeless and Scalaz. Yet end-user applications rarely use them.
-In this talk, I will discuss the shortcomings of Monocle, a library I created six years ago. And then, I will present game-changing updates that are coming for the next version of Monocle, specifically for Dotty/Scala 3.">
+    <meta property="og:description" content="Optics is a popular topic among library authors; they exist in at least four flavours in Scala: Monocle, Quicklens, Shapeless and Targetfu. However, we rarely see optics in real world code bases.
+Why is that? Why are optics not popular in Scala?">
     <meta property="og:image" content="https://github.com/fp-tower/monocle-3-a-peek-into-the-future/blob/gh-pages/img/fp-tower/social-preview.png?raw=true">
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://metatags.io/">
     <meta property="twitter:title" content="Monocle 3: A peek into the future">
-    <meta property="twitter:description" content="User-friendly and powerful optics for Dotty/Scala 3">
+    <meta property="twitter:description" content="Optics is a popular topic among library authors; they exist in at least four flavours in Scala: Monocle, Quicklens, Shapeless and Targetfu. However, we rarely see optics in real world code bases.
+Why is that? Why are optics not popular in Scala?">
     <meta property="twitter:image" content="https://raw.githubusercontent.com/fp-tower/monocle-3-a-peek-into-the-future/gh-pages/img/fp-tower/social-preview.png">
   </head>
   <body>
@@ -39,11 +40,9 @@ layout: true
 
 
 ---
-background-image: url(img/fp-tower/website-background.svg)
+background-image: url(img/title.svg)
 
-class: center, middle, white
 
-.title[Monocle 3: a peek into the future]
 
 ---
 # Julien Truffaut
@@ -57,23 +56,19 @@ class: center, middle, white
 .sixty-two-right[<br>
 ## Backend Scala developer
 
-## FP instructor at www.fp-tower.com
+## FP trainer at fp-tower.com
 
 ## Maintainer of &nbsp<img src="img/fp-tower/monocle-logo.png" alt="Monocle" style="width:150px;"/>
 ]
 
 ---
-# Agenda
+# Objectives
 
-<br>
+<br><br>
 
-## 1. Why optics?
+## 1. Why do we need optics? What are they?
 
-## 2. Quick overview of optics
-
-## 3. Issues with current Monocle API
-
-## 4. How we intend to fix them
+## 2. Current issues with Monocle API and how we intend to fix them
 
 ---
 # Mutation
@@ -84,13 +79,13 @@ class: center, middle, white
 ```scala mdoc:invisible
 case class User(var name: String, var address: Address)
 
-case class Address(var streetNumber: Int, var postCode: String)
+case class Address(var streetNumber: Int, var postcode: String)
 ```
 
 ```scala
 case class User(`var` name: String, `var` address: Address)
 
-case class Address(`var` streetNumber: Int, `var` postCode: String)
+case class Address(`var` streetNumber: Int, `var` postcode: String)
 ```
 
 ---
@@ -101,7 +96,7 @@ case class Address(`var` streetNumber: Int, `var` postCode: String)
 ```scala
 case class User(var name: String, var address: Address)
 
-case class Address(var streetNumber: Int, var postCode: String)
+case class Address(var streetNumber: Int, var postcode: String)
 ```
 
 <br>
@@ -122,7 +117,7 @@ julien.address.streetNumber
 ```scala
 case class User(var name: String, var address: Address)
 
-case class Address(var streetNumber: Int, var postCode: String)
+case class Address(var streetNumber: Int, var postcode: String)
 ```
 
 <br>
@@ -233,14 +228,14 @@ class: center, middle
 
 ```scala mdoc:reset:invisible
 case class User(name: String, address: Address)
-case class Address(streetNumber: Int, postCode: String)
+case class Address(streetNumber: Int, postcode: String)
 
 val julien = User("Julien", Address(12, "E16 4SR"))
 ```
 
 ```scala
 case class User(name: String, address: Address)
-case class Address(streetNumber: Int, postCode: String)
+case class Address(streetNumber: Int, postcode: String)
 
 val julien = User("Julien", Address(`12`, "E16 4SR"))
 ```
@@ -286,7 +281,7 @@ case class DebitCard(
 ```scala mdoc:invisible
 import java.time.YearMonth
 
-case class Address(streetNumber: Int, postCode: String)
+case class Address(streetNumber: Int, postcode: String)
 ```
 
 ```scala mdoc:invisible
@@ -355,7 +350,7 @@ def updateExpiry(user: User, newExpiry: YearMonth): User =
 ```
 
 .center[
-## How do we modify an enum?
+## How do we modify an enumeration?
 ]
 
 ---
@@ -480,7 +475,7 @@ updateExpiry(anna, YearMonth.of(`2024, 1`))
 
 ```scala mdoc:reset:invisible
 import java.time.YearMonth
-case class Address(streetNumber: Int, postCode: String)
+case class Address(streetNumber: Int, postcode: String)
 
 sealed trait PaymentMethod
 case class DebitCard(cardNumber: String, expirationDate: YearMonth, securityCode: Int) extends PaymentMethod
@@ -514,7 +509,7 @@ val julien = User(
 ```
 
 .center[
-## How do we change the .hl2[expiry date] of the .hl2[personal] payment method?
+## How do we change the .hl2[expiry date] of the .hl2["Personal"] payment method?
 ]
 
 ---
@@ -599,34 +594,52 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
 
 <br>
 
-.fifty-two-left[
+.fifty-seven-left[
 ```scala mdoc:silent
-trait Optic[`From`, `To`] {
+trait Optic[`Source`, `Target`] {
 
-  def get(from: From): To
-
-
-  def replace(from: From, newTo: To): From
+  def get(source: Source): Target
 
 
-  def modify(from: From, update: To => To): From
+  def replace(newTarget: Target)(source: Source): Source
+
+
+  def modify(update: Target => Target)(source: Source): Source
 }
 ```
 ]
 
---
+---
+# Optic
 
-.forty-seven-right[
+<br>
+
+.fifty-seven-left[
 ```scala
-val name: Optic[`User`, `String`] = ...
+trait Optic[Source, Target] {
+
+  def get(source: Source): Target
+
+
+  def replace(newTarget: Target)(source: Source): Source
+
+
+  def modify(update: Target => Target)(source: Source): Source
+}
+```
+]
+
+.forty-two-right[
+```scala
+val name: Optic[User, String] = ...
 
 name.get(user)
-// res: String = "Julien"
+// res: String = `"Julien"`
 
-name.replace(user, "Bob")
+name.replace("Bob")(user)
 // res: User = User(`"Bob"`, Address(12, ...
 
-name.modify(user, _.toUpperCase)
+name.modify(_.toUpperCase)(user)
 // res: User = User(`"JULIEN"`, Address(12, ...
 ```
 ]
@@ -638,15 +651,15 @@ name.modify(user, _.toUpperCase)
 <br>
 
 ```scala
-trait Optic[From, To] {
+trait Optic[Source, Target] {
 
-  def get      (from: From): `       To ` // Lens, Iso
-  def getOption(from: From): `Option[To]` // Prism, Optional
-  def getAll   (from: From): `  List[To]` // Fold, Traversal
+  def get      (source: Source): `       Target ` // Lens , Iso
+  def getOption(source: Source): `Option[Target]` // Prism, Optional
+  def getAll   (source: Source): `  List[Target]` // Fold , Traversal
 
-  def replace(from: From, newTo: To): From
+  def replace(newTarget: Target)(source: Source): Source
 
-  def modify(from: From, update: To => To): From
+  def modify(update: Target => Target)(source: Source): Source
 
 }
 ```
@@ -657,9 +670,9 @@ trait Optic[From, To] {
 <br>
 
 ```scala mdoc:reset:silent
-trait Optic[From, `To`] {
+trait Optic[Source, Target] {
 
-  def andThen[Next](other: Optic[`To`, Next]): Optic[From, Next]
+  def andThen[Next](other: Optic[Target, Next]): Optic[Source, Next]
 
 }
 ```
@@ -754,7 +767,7 @@ class: medium-code
 ```scala mdoc:invisible
 import java.time.YearMonth
 case class User(name: String, address: Address, paymentMethods: Map[String, PaymentMethod])
-case class Address(streetNumber: Int, postCode: String)
+case class Address(streetNumber: Int, postcode: String)
 sealed trait PaymentMethod
 case class DebitCard(cardNumber: String, expirationDate: YearMonth, securityCode: Int) extends PaymentMethod
 case class PayPal(email: String) extends PaymentMethod
@@ -789,7 +802,7 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
     .andThen(index(paymentName))
     .andThen(debitCard)
     .andThen(expirationDate)
-    .replace(user, newExpiry)
+    .replace(newExpiry)(user)
 ```
 ]
 
@@ -806,16 +819,16 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
     .compose`Optional`(index(paymentName))
     .compose`Prism`(debitCard)
     .compose`Lens`(expirationDate)
-    .replace(user, newExpiry)
+    .replace(newExpiry)(user)
 ```
 
 ## Monocle 2: one compose method per type of optic
 
 ```scala
-trait Optic[From, To] {
-  def compose`Optional`[Next](other: `Optional`[To, Next]): Optic[From, Next]
-  def compose`Prism`   [Next](other: `Prism`   [To, Next]): Optic[From, Next]
-  def compose`Lens`    [Next](other: `Lens`    [To, Next]): Optic[From, Next]
+trait Optic[Source, Target] {
+  def compose`Optional`[Next](other: `Optional`[Target, Next]): Optic[Source, Next]
+  def compose`Prism`   [Next](other: `Prism`   [Target, Next]): Optic[Source, Next]
+  def compose`Lens`    [Next](other: `Lens`    [Target, Next]): Optic[Source, Next]
   ...
 }
 ```
@@ -833,16 +846,16 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
     .andThen(index(paymentName))
     .andThen(debitCard)
     .andThen(expirationDate)
-    .replace(user, newExpiry)
+    .replace(newExpiry)(user)
 ```
 
 <br>
 
 ```scala
-trait Optic[From, To] {
-  def andThen[Next](other: Optional[To, Next]): Optic[From, Next]
-  def andThen[Next](other: Prism   [To, Next]): Optic[From, Next]
-  def andThen[Next](other: Lens    [To, Next]): Optic[From, Next]
+trait Optic[Source, Target] {
+  def andThen[Next](other: Optional[Target, Next]): Optic[Source, Next]
+  def andThen[Next](other: Prism   [Target, Next]): Optic[Source, Next]
+  def andThen[Next](other: Lens    [Target, Next]): Optic[Source, Next]
   ...
 }
 ```
@@ -860,7 +873,7 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
     .`andThen(index(paymentName))`
     .andThen(debitCard)
     .andThen(expirationDate)
-    .replace(user, newExpiry)
+    .replace(newExpiry)(user)
 ```
 
 <br>
@@ -868,7 +881,7 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
 ```scala
 // error: ambiguous implicit values
 //        both method `mapIndex` of type ... and method `listMapIndex` of type ...
-//        match expected type `Index[From, String, To]`
+//        match expected type `Index[Source, String, Target]`
 ```
 
 ---
@@ -882,7 +895,7 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
     .andThen(index(paymentName)`: Optional[Map[String, PaymentMethod], PaymentMethod]`)
     .andThen(debitCard)
     .andThen(expirationDate)
-    .replace(user, newExpiry)
+    .replace(newExpiry)(user)
 ```
 
 --
@@ -893,45 +906,100 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
 
 ## Solution 3: Wait for Scala 3 (mostly)
 
+--
+
+## Solution 4: Monocle 3
+
 ---
 class: medium-code
 
-# Monocle 3: Add shortcuts
-
-<br>
+# Monocle 3: andThen + common shortcuts
 
 ```scala
-trait Optic[From, To] {
-  def index[Key, Next](key: Key) = andThen(index(key): Optional[To, Next])
+import monocle.function.Index.index
+
+trait Optic[Source, Target] {
+
+  `def index`[Key, Next](key: Key): Optic[Source, Next] = // simplified signature
+     andThen(index(key): Optional[Target, Next])
+
 }
-// simplified signature
 ```
 
---
-<br>
+---
+class: medium-code
+
+# Monocle 3: andThen + common shortcuts
 
 ```scala
-def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
-  paymentMethods
-    .`index(paymentName)`
-    .andThen(debitCard)
-    .andThen(expirationDate)
-    .replace(user, newExpiry)
+import monocle.function.Index.index
+
+trait Optic[Source, Target] {
+
+  def index[Key, Next](key: Key): Optic[Source, Next] = // simplified signature
+     andThen(index(key): Optional[Target, Next])
+
+}
 ```
+
+.forty-seven-left[
+## Monocle 2
+```scala
+optic.`andThen(index(key))`
+```
+]
+
+.forty-seven-right[
+## Monocle 3
+```scala
+optic.`index(key)`
+```
+]
+
+
+
+---
+class: medium-code
+
+# Monocle 3: andThen + common shortcuts
+
+```scala
+import monocle.function.Index.index
+
+trait Optic[Source, Target] {
+
+  def index[Key, Next](key: Key): Optic[Source, Next] = // simplified signature
+     andThen(index(key)`: Optional[Target, Next]`)
+
+}
+```
+
+.forty-seven-left[
+## Monocle 2
+```scala
+optic.andThen(index(key))
+```
+]
+
+.forty-seven-right[
+## Monocle 3
+```scala
+optic.index(key)
+```
+]
 
 ---
 class: medium-code
 
 # Better discoverability and documentation
 
-<br>
-
 ```scala
-trait Optic[From, To] {
-  def index[Key, Next](key: Key) = andThen(index(key): Optional[To, Next])
+trait Optic[Source, Target] {
+  def index[Key, Next](key: Key) = andThen(index(key): Optional[Target, Next])
 }
-// simplified signature
 ```
+
+<br>
 
 .center[
 <img src="img/index-doc.png" alt="Javadoc" style="width:800px;"/>
@@ -953,37 +1021,6 @@ val expirationDate: Optic[DebitCard, YearMonth] = ...
 .sixty-seven-left[
 ```scala
 def index[Key, Value](key: Key): Optic[Map[Key, Value], Value] = ...
-```
-]
-
-
-<br><br><br><br>
-
-```scala
-def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
-  paymentMethods
-    .andThen(index(paymentName))
-    .andThen(debitCard)
-    .andThen(expirationDate)
-    .replace(user, newExpiry)
-```
-
----
-class: medium-code
-
-# Problem #2: Optics creation
-
-<br>
-
-```scala
-val paymentMethods: Optic[User, Map[String, PaymentMethod]] = ...
-val debitCard     : Optic[PaymentMethod, DebitCard] = ...
-val expirationDate: Optic[DebitCard, YearMonth] = ...
-```
-
-.sixty-seven-left[
-```scala
-*def index[Key, Value](key: Key): Optic[Map[Key, Value], Value] = ...
 ```
 ]
 
@@ -1053,6 +1090,8 @@ val expirationDate = Gen`Lens`[DebitCard](_.expirationDate)
 background-image: url(img/lotr-focus.jpg)
 
 ---
+class: medium-code
+
 # Solution: Focus macro (Scala 3)
 
 <br>
@@ -1065,6 +1104,8 @@ Focus[User](_.address.streetNumber)
 ```
 
 ---
+class: medium-code
+
 # Solution: Focus macro (Scala 3)
 
 <br>
@@ -1075,11 +1116,13 @@ import monocle.Focus
 Focus[User](_.address.streetNumber)
 // res: Lens[User, Int]
 
-Focus[User](_.paymentMethods.`index("Personal")`.expirationDate)
-// res: `Optional`[User, YearMonth]
+Focus[User](_.paymentMethods.`index("Personal")`)
+// res: `Optional`[User, PaymentMethod]
 ```
 
 ---
+class: medium-code
+
 # Solution: Focus macro (Scala 3)
 
 <br>
@@ -1090,14 +1133,67 @@ import monocle.Focus
 Focus[User](_.address.streetNumber)
 // res: Lens[User, Int]
 
-Focus[User](_.paymentMethods.index("Personal").expirationDate)
+Focus[User](_.paymentMethods.index("Personal"))
+// res: Optional[User, `PaymentMethod`]
+```
+
+---
+class: medium-code
+
+# Solution: Focus macro (Scala 3)
+
+<br>
+
+```scala
+import monocle.Focus
+
+Focus[User](_.address.streetNumber)
+// res: Lens[User, Int]
+
+Focus[User](_.paymentMethods.index("Personal").`as[DebitCard]`)
+// res: Optional[User, `DebitCard`]
+```
+
+---
+class: medium-code
+
+# Solution: Focus macro (Scala 3)
+
+<br>
+
+```scala
+import monocle.Focus
+
+Focus[User](_.address.streetNumber)
+// res: Lens[User, Int]
+
+Focus[User](_.paymentMethods.index("Personal").as[DebitCard].`expirationDate`)
+// res: Optional[User, `YearMonth`]
+```
+
+---
+class: medium-code
+
+# Solution: Focus macro (Scala 3)
+
+<br>
+
+```scala
+import monocle.Focus
+
+Focus[User](_.address.streetNumber)
+// res: Lens[User, Int]
+
+Focus[User](_.paymentMethods.index("Personal").as[DebitCard].expirationDate)
 // res: Optional[User, YearMonth]
 
-Focus[User](_.paymentMethods.`*`.cardNumber)
+Focus[User](_.paymentMethods.`each`.as[DebitCard].cardNumber)
 // res: `Traversal`[User, String]
 ```
 
 ---
+class: medium-code
+
 # Solution: Focus macro (Scala 3)
 
 <br>
@@ -1108,18 +1204,40 @@ import monocle.Focus
 Focus[User](_.address.streetNumber)
 // res: Lens[User, Int]
 
-Focus[User](_.paymentMethods.index("Personal").expirationDate)
+Focus[User](_.paymentMethods.index("Personal").as[DebitCard].expirationDate)
 // res: Optional[User, YearMonth]
 
-Focus[User](_.paymentMethods.*.cardNumber)
+Focus[User](_.paymentMethods.each.as[DebitCard].cardNumber)
 // res: Traversal[User, String]
 ```
 
 <br>
 
 .center[
-## Prototype developed by .hl2[Yilin Wei] in Monocly
+## Thanks to .hl2[Yilin Wei] and .hl2[Ken Scambler]
 ]
+
+---
+class: medium-code
+
+# Bonus: Partially applied optics
+
+<br>
+
+```scala
+import monocle.syntax.all._
+
+user
+  .focus(_.address.streetNumber)
+  .replace(12)
+// res: User = ...
+
+user
+  .focus(_.paymentMethods.each.as[DebitCard].expirationDate)
+  .modify(_.plusYears(2))
+// res: User = ...
+```
+
 
 ---
 # Problem 3: Lawfulness
@@ -1139,13 +1257,13 @@ class: medium-code
 
 .fifty-four-left[
 ```scala
-trait Optic[From, To] {
-  def get(from: From): To
-  def replace(from: From, newTo: To): From
-  def modify(from: From, update: To => To): From
+trait Optic[Source, Target] {
+  def get ...
+  def replace ...
+  def modify ...
 }
 
-val user = User("Julien", 34, Address(12, "Cody Road"))
+val user = User("Julien", 34, Address(12, "Cody Rd"))
 
 val userToStreetNumber: Optic[User, Int] =
   Focus[User](_.address.streetNumber)
@@ -1162,20 +1280,19 @@ class: medium-code
 
 .fifty-four-left[
 ```scala
-trait Optic[From, To] {
-  def get(from: From): To
-  def replace(from: From, newTo: To): From
-  def modify(from: From, update: To => To): From
+trait Optic[Source, Target] {
+  def get ...
+  def replace ...
+  def modify ...
 }
 
-val user = User("Julien", 34, Address(12, "Cody Road"))
+val user = User("Julien", 34, Address(12, "Cody Rd"))
 
 val userToStreetNumber: Optic[User, Int] =
   Focus[User](_.address.streetNumber)
 
-val newUser = userToStreetNumber.replace(user, `48`)
-// newUser: User = User("Julien", 34,
-//   Address(`48`, "Cody Road"))
+val newUser = userToStreetNumber.replace(`48`)(user)
+// User("Julien", 34, Address(`48`, "Cody Rd"))
 ```
 ]
 
@@ -1189,23 +1306,22 @@ class: medium-code
 
 .fifty-four-left[
 ```scala
-trait Optic[From, To] {
-  def get(from: From): To
-  def replace(from: From, newTo: To): From
-  def modify(from: From, update: To => To): From
+trait Optic[Source, Target] {
+  def get ...
+  def replace ...
+  def modify ...
 }
 
-val user = User("Julien", 34, Address(12, "Cody Road"))
+val user = User("Julien", 34, Address(12, "Cody Rd"))
 
 val userToStreetNumber: Optic[User, Int] =
   Focus[User](_.address.streetNumber)
 
-val newUser = userToStreetNumber.replace(user, `48`)
-// newUser: User = User("Julien", 34,
-//   Address(48, "Cody Road"))
+val newUser = userToStreetNumber.replace(`48`)(user)
+// User("Julien", 34, Address(`48`, "Cody Rd"))
 
 val newStreetNumber = userToStreetNumber.get(newUser)
-// newStreetNumber: Int = `48`
+// `48`
 ```
 ]
 
@@ -1217,25 +1333,25 @@ val newStreetNumber = userToStreetNumber.get(newUser)
 class: medium-code
 # Problem 3: Expected behaviour
 
-.fifty-seven-left[
+.sixty-seven-left[
 ```scala
-trait Optic[From, To] {
-  def get(from: From): To
-  def replace(from: From, newTo: To): From
-  def modify(from: From, update: To => To): From
+trait Optic[Source, Target] {
+  def get ...
+  def replace ...
+  def modify ...
 }
 
 val userToStreetNumber: Optic[User, Int] =
   Focus[User](_.address.streetNumber)
 
 test(`"get what you replace"`){
-  `forAll`{ (user: User, newStreetNumber: Int) =>
+  forAll{ (user: User, newStreetNumber: Int) =>
 
-    val newUser = userToStreetNumber
-      .`replace`(user, newStreetNumber)
+    val newUser = userToStreetNumber.replace(newStreetNumber)(user)
 
-    assert(
-      userToStreetNumber.`get`(newUser) == newStreetNumber
+    assertEquals(
+      userToStreetNumber.get(newUser),
+      newStreetNumber
     )
 
   }
@@ -1243,22 +1359,92 @@ test(`"get what you replace"`){
 ```
 ]
 
-.forty-two-left[.center[
-<br><br><br><br><br><br><br>
+.thirty-two-left[.center[
+<br><br><br><br><br>
 ## &nbsp&nbsp&nbsp&nbspProperty-Based Testing<br>(PBT)
 ]]
 
 ---
-# FP library design principle
+class: medium-code
+# Problem 3: Expected behaviour
+
+.sixty-seven-left[
+```scala
+trait Optic[Source, Target] {
+  def get ...
+  def replace ...
+  def modify ...
+}
+
+val userToStreetNumber: Optic[User, Int] =
+  Focus[User](_.address.streetNumber)
+
+test("get what you replace"){
+  `forAll{ (user: User, newStreetNumber: Int)` =>
+
+    val newUser = userToStreetNumber.replace(newStreetNumber)(user)
+
+    assertEquals(
+      userToStreetNumber.get(newUser),
+      newStreetNumber
+    )
+
+  }
+}
+```
+]
+
+.thirty-two-left[.center[
+<br><br><br><br><br>
+## &nbsp&nbsp&nbsp&nbspProperty-Based Testing<br>(PBT)
+]]
+
+---
+class: medium-code
+# Problem 3: Expected behaviour
+
+.sixty-seven-left[
+```scala
+trait Optic[Source, Target] {
+  def get ...
+  def replace ...
+  def modify ...
+}
+
+val userToStreetNumber: Optic[User, Int] =
+  Focus[User](_.address.streetNumber)
+
+test("get what you replace"){
+  forAll{ (user: User, newStreetNumber: Int) =>
+
+    val newUser = userToStreetNumber.`replace`(newStreetNumber)(user)
+
+    `assertEquals`(
+      userToStreetNumber.`get`(newUser),
+      newStreetNumber
+    )
+
+  }
+}
+```
+]
+
+.thirty-two-left[.center[
+<br><br><br><br><br>
+## &nbsp&nbsp&nbsp&nbspProperty-Based Testing<br>(PBT)
+]]
+
+---
+# Lego principle
 
 <br>
 
 ## When using a constructor, you .hl2[NEED] to run the tests
 
 ```scala
-val address      = Optic[User, Address](_.address     , (newOne, user)     => user.copy(address = newOne))
+val address      = Optic[User, Address](_.address     )((newOne, user   ) => user.copy(address = newOne))
 
-val streetNumber = Optic[Address, Int] (_.streetNumber, (newOne , address) => address.copy(streetNumber = newOne))
+val streetNumber = Optic[Address, Int] (_.streetNumber)((newOne, address) => address.copy(streetNumber = newOne))
 ```
 
 ## When using a combinator, you .hl2[DON'T NEED] to run the tests
@@ -1273,11 +1459,11 @@ class: medium-code
 
 .fifty-four-left[
 ```scala
-trait Optic[`From`, To] {
-  // get/set/modify
+trait Optic[Source, Target] {
+  // get/replace/modify
 
-  def zip[Other](other: Optic[`From`, Other])
-    : Optic[`From`, (To, Other)]
+  def zip[Other](other: Optic[Source, Other])
+    : Optic[Source, (Target, Other)]
 }
 
 val nameAndStreetNumber: Optic[User, (String, Int)] =
@@ -1296,34 +1482,11 @@ class: medium-code
 
 .fifty-four-left[
 ```scala
-trait Optic[From, `To`] {
-  // get/set/modify
+trait Optic[Source, Target] {
+  // get/replace/modify
 
-  def zip[Other](other: Optic[From, `Other`])
-    : Optic[From, (`To, Other`)]
-}
-
-val nameAndStreetNumber: Optic[User, (String, Int)] =
-  Focus[User](_.name)
-    .zip(Focus[User](_.address.streetNumber))
-```
-]
-
-.forty-five-right[.center[
-<img src="img/diagrams/recursive-json-3.svg" alt="Json tree" style="width:500px;"/>
-]]
-
----
-class: medium-code
-# Zip can break the expected behaviour
-
-.fifty-four-left[
-```scala
-trait Optic[From, To] {
-  // get/set/modify
-
-  def zip[Other](other: Optic[From, Other])
-    : Optic[From, (To, Other)]
+  def zip[Other](other: Optic[Source, Other])
+    : Optic[Source, (Target, Other)]
 }
 
 val nameAndStreetNumber: Optic[User, (String, Int)] =
@@ -1345,11 +1508,11 @@ class: medium-code
 
 .fifty-four-left[
 ```scala
-trait Optic[From, To] {
-  // get/set/modify
+trait Optic[Source, Target] {
+  // get/replace/modify
 
-  def zip[Other](other: Optic[From, Other])
-    : Optic[From, (To, Other)]
+  def zip[Other](other: Optic[Source, Other])
+    : Optic[Source, (Target, Other)]
 }
 
 val nameAndStreetNumber: Optic[User, (String, Int)] =
@@ -1361,7 +1524,7 @@ nameAndStreetNumber.`get`(user)
 
 nameAndStreetNumber.`replace`(user, (`"Bob", 48`))
 // newUser: User =
-//   User(`"Bob"`, 34, Address(`48`, "Cody Road"))
+//   User(`"Bob"`, 34, Address(`48`, "Cody Rd"))
 ```
 ]
 
@@ -1373,69 +1536,70 @@ nameAndStreetNumber.`replace`(user, (`"Bob", 48`))
 class: medium-code
 # Zip can break the expected behaviour
 
-<br>
-
+.fifty-four-left[
 ```scala
-trait Optic[From, To] {
-  // get/set/modify
+trait Optic[Source, Target] {
+  // get/replace/modify
 
-  def zip[Other](other: Optic[From, Other])
-    : Optic[From, (To, Other)]
+  def zip[Other](other: Optic[Source, Other])
+    : Optic[Source, (Target, Other)]
 }
 
 val `name`: Optic[User, String] = Focus[User](_.name)
 
-val nameTwice: Optic[User, (String, String)] = `name`.zip(`name`)
+val nameTwice: Optic[User, (String, String)] =
+  `name`.zip(`name`)
 ```
+]
 
 ---
 class: medium-code
 # Zip can break the expected behaviour
 
-<br>
-
+.sixty-two-left[
 ```scala
-trait Optic[From, To] {
-  // get/set/modify
+trait Optic[Source, Target] {
+  // get/replace/modify
 
-  def zip[Other](other: Optic[From, Other])
-    : Optic[From, (To, Other)]
+  def zip[Other](other: Optic[Source, Other])
+    : Optic[Source, (Target, Other)]
 }
 
 val name: Optic[User, String] = Focus[User](_.name)
 
-val nameTwice: Optic[User, (String, String)] = name.zip(name)
+val nameTwice: Optic[User, (String, String)] =
+  name.zip(name)
 
-val updatedUser = nameTwice.`replace`(user, (`"Bob", "Alice"`))
-// newUser: User =
-//   User(`"Alice"`, 34, Address(12, "Cody Road"))
+val updatedUser = nameTwice.`replace`((`"Bob", "Alice"`))(user)
+// User(`"Alice"`, 34, Address(12, "Cody Rd"))
 ```
+]
 
 ---
 class: medium-code
 # Zip can break the expected behaviour
 
-<br>
-
+.sixty-two-left[
 ```scala
-trait Optic[From, To] {
-  // get/set/modify
+trait Optic[Source, Target] {
+  // get/replace/modify
 
-  def zip[Other](other: Optic[From, Other])
-    : Optic[From, (To, Other)]
+  def zip[Other](other: Optic[Source, Other])
+    : Optic[Source, (Target, Other)]
 }
 
 val name: Optic[User, String] = Focus[User](_.name)
 
-val nameTwice: Optic[User, (String, String)] = name.zip(name)
+val nameTwice: Optic[User, (String, String)] =
+  name.zip(name)
 
-val updatedUser = nameTwice.replace(user, (`"Bob", "Alice"`))
-// newUser: User =
-//   User("Alice", 34, Address(12, "Cody Road"))
+val updatedUser = nameTwice.replace((`"Bob", "Alice"`))(user)
+// User("Alice", 34, Address(12, "Cody Rd"))
 
 nameTwice.get(updatedUser)
-// res: (String, String) = (`"Alice", "Alice"`)
+// (`"Alice", "Alice"`)
 ```
+]
 
 ---
 
@@ -1447,8 +1611,8 @@ nameTwice.get(updatedUser)
 # Solution: Documentation
 
 ```scala
-trait Optic[From, To] {
-  // Zip two optics together that starts with the same From type
+trait Optic[Source, Target] {
+  // Zip two optics together that starts with the same Source type
   // {{
   //   val nameOptic: Optic[User, String] = ...
   //   val ageOptic : Optic[User, Int]    = ...
@@ -1457,29 +1621,78 @@ trait Optic[From, To] {
   //   res: (String, Int) = ("Bob", 42)
   // }}
   // `WARNING: This combinator can break the "get what you replace" property`
-  // `if you zip two intersecting optics`. For example:
+  // `if you zip two optics that focus on the same data`. For example:
   // {{
-  //   val broken  = nameOptic.zip(nameOptic)
-  //   val newUser = broken.replace(user, ("Bob", "Alice"))
-  //   broken.get(newUser)
-  //   res: ("Alice", "Alice")
+  //   val broken   = nameOptic.zip(nameOptic)
+  //   val newNames = ("Bob", "Alice")
+  //   val newUser  = broken.replace(newNames)(user)
+  //
+  //   broken.get(newUser) != newNames
   // }}
-  def zip[Other](other: Optic[From, Other]): Optic[From, (To, Other)]
+  def zip[Other](other: Optic[Source, Other]): Optic[Source, (Target, Other)]
 }
 ```
 
 ---
-# Monocle 3: Focus on user experience
+# Summary
 
+
+
+.fifty-seven-left[
 <br>
+## Difficult to transform immutable data
 
-## Better discoverability and documentation
+## Optics offers a path-like API to<br>get/replace/modify a target
 
-## Almighty Focus macro
+## Optics are a better copy method
+]
 
-## New powerful (and potentially dangerous) combinators: filter, withDefault
+.thirty-seven-left[
+<img src="img/diagrams/user-to-expiration-date-5.svg" alt="User to expiration date " style="width:450px;"/>
+]
 
-## And much more...
+---
+<br><br>
+
+.forty-seven-left[
+# Monocle 2
+
+## Boiler platy
+
+## Requires too much knowledge
+
+## Too strict
+]
+
+.forty-seven-right[
+# Monocle 3
+
+## overloaded andThen
+
+## Shortcuts for "index", "each", ...
+
+## Softer stance on "laws"
+
+## Focus macro
+]
+
+---
+
+<br><br><br><br><br><br>
+.center[
+# Monocle 3 is available today (experimental)
+
+## Scala 2.13 and 3.0.0-M3
+]
+
+
+```scala
+libraryDependencies ++= Seq(
+ "com.github.julien-truffaut" %% "monocle-core"  % `"3.0.0-M1"`,
+ "com.github.julien-truffaut" %% "monocle-macro" % `"3.0.0-M1"`, // Not required for Scala 3
+)
+```
+
 
 ---
 # Join the team
@@ -1489,9 +1702,18 @@ trait Optic[From, To] {
  <div class="row">
   <div class="column">
     <div class="card">
-      <img src="img/CarlosQuiroz.png" alt="Carlos Quiroz" style="width:100%">
+      <img src="img/CarlosQuiroz.png" alt="Carlos Quiroz" style="width:98%">
       <div class="container">
         <h3>Carlos Quiroz</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="column">
+    <div class="card">
+      <img src="img/KenScambler.jpg" alt="Ken Scambler" style="width:90%">
+      <div class="container">
+        <h3>Ken Scambler</h3>
       </div>
     </div>
   </div>
@@ -1507,7 +1729,7 @@ trait Optic[From, To] {
 
   <div class="column">
     <div class="card">
-      <img src="img/YilinWei.png" alt="Yilin Wei" style="width:100%">
+      <img src="img/YilinWei.png" alt="Yilin Wei" style="width:99%">
       <div class="container">
         <h3>Yilin Wei</h3>
       </div>
@@ -1516,16 +1738,7 @@ trait Optic[From, To] {
 
   <div class="column">
     <div class="card">
-      <img src="img/KenjiYoshida.png" alt="Kenji Yoshida" style="width:100%">
-      <div class="container">
-        <h3>Kenji Yoshida</h3>
-      </div>
-    </div>
-  </div>
-
-  <div class="column">
-    <div class="card">
-      <img src="img/question-mark-profile.png" alt="You" style="width:100%">
+      <img src="img/question-mark-profile.png" alt="You" style="width:99%">
       <div class="container">
         <h3>Yourself</h3>
       </div>
@@ -1539,6 +1752,18 @@ background-image: url(img/fp-tower/website-background.svg)
 
 class: center, middle, white
 
+# .white[www.fp-tower.com/courses/foundations]
+
+.title[Coupon: Monocle3]
+## .white[15% discount until 28th of February]
+
+<br>
+
+---
+background-image: url(img/fp-tower/website-background.svg)
+
+class: center, middle, white
+
 .title[Monocle 4]
 
 ```scala mdoc:reset:invisible
@@ -1546,7 +1771,7 @@ import java.time.YearMonth
 
 case class User(name: String, address: Address, paymentMethods: Map[String, PaymentMethod])
 
-case class Address(streetNumber: Int, postCode: String)
+case class Address(streetNumber: Int, postcode: String)
 
 sealed trait PaymentMethod
 case class DebitCard(cardNumber: String, expirationDate: YearMonth, securityCode: Int) extends PaymentMethod
@@ -1750,8 +1975,8 @@ class: medium-code
 <br>
 
 ```scala
-trait Optic[`+Error`, From, To] {
-  def modifyError(from: From, update: To => To): Either[`Error`, From]
+trait Optic[`+Error`, Source, Target] {
+  def modifyError(source: Source, update: Target => Target): Either[`Error`, Source]
 }
 ```
 
@@ -1769,10 +1994,10 @@ class: medium-code
 <br>
 
 ```scala
-trait Optic[`+Error`, From, To] {
-  def modifyError(from: From, update: To => To): Either[`Error`, From]
+trait Optic[`+Error`, Source, Target] {
+  def modifyError(source: Source, update: Target => Target): Either[`Error`, Source]
 
-  def andThen[Next](other: Optic[`Error`, To, Next]): Optic[`Error`, From, Next]
+  def andThen[Next](other: Optic[`Error`, Target, Next]): Optic[`Error`, Source, Next]
 }
 ```
 
@@ -1784,10 +2009,10 @@ class: medium-code
 <br>
 
 ```scala
-trait Optic[+Error, From, To] {
-  def modifyError(from: From, update: To => To): Either[Error, From]
+trait Optic[+Error, Source, Target] {
+  def modifyError(source: Source, update: Target => Target): Either[Error, Source]
 
-  def andThen[Next](other: Optic[Error, To, Next]): Optic[Error, From, Next]
+  def andThen[Next](other: Optic[Error, Target, Next]): Optic[Error, Source, Next]
 }
 ```
 
@@ -1813,10 +2038,10 @@ class: medium-code
 <br>
 
 ```scala
-trait Optic[+Error, From, To] {
-  def modifyError(from: From, update: To => To): Either[Error, From]
+trait Optic[+Error, Source, Target] {
+  def modifyError(source: Source, update: Target => Target): Either[Error, Source]
 
-  def andThen[`E1`, Next](other: Optic[`E1`, To, Next]): Optic[`E1 | Error`, From, Next]
+  def andThen[`E1`, Next](other: Optic[`E1`, Target, Next]): Optic[`E1 | Error`, Source, Next]
 }
 ```
 
