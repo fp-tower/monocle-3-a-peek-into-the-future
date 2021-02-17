@@ -906,100 +906,69 @@ def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
 
 ## Solution 3: Wait for Scala 3 (mostly)
 
---
-
-## Solution 4: Monocle 3
-
 ---
 class: medium-code
 
 # Monocle 3: andThen + common shortcuts
-
-```scala
-import monocle.function.Index.index
-
-trait Optic[Source, Target] {
-
-  `def index`[Key, Next](key: Key): Optic[Source, Next] = // simplified signature
-     andThen(index(key): Optional[Target, Next])
-
-}
-```
-
----
-class: medium-code
-
-# Monocle 3: andThen + common shortcuts
-
-```scala
-import monocle.function.Index.index
-
-trait Optic[Source, Target] {
-
-  def index[Key, Next](key: Key): Optic[Source, Next] = // simplified signature
-     andThen(index(key): Optional[Target, Next])
-
-}
-```
-
-.forty-seven-left[
-## Monocle 2
-```scala
-optic.`andThen(index(key))`
-```
-]
-
-.forty-seven-right[
-## Monocle 3
-```scala
-optic.`index(key)`
-```
-]
-
-
-
----
-class: medium-code
-
-# Monocle 3: andThen + common shortcuts
-
-```scala
-import monocle.function.Index.index
-
-trait Optic[Source, Target] {
-
-  def index[Key, Next](key: Key): Optic[Source, Next] = // simplified signature
-     andThen(index(key)`: Optional[Target, Next]`)
-
-}
-```
-
-.forty-seven-left[
-## Monocle 2
-```scala
-optic.andThen(index(key))
-```
-]
-
-.forty-seven-right[
-## Monocle 3
-```scala
-optic.index(key)
-```
-]
-
----
-class: medium-code
-
-# Better discoverability and documentation
-
-```scala
-trait Optic[Source, Target] {
-  def index[Key, Next](key: Key) = andThen(index(key): Optional[Target, Next])
-}
-```
 
 <br>
+
+```scala
+extension[Source, Key, Target] (optic: Optic[Source, `Map[Key, Target]`])
+
+  def index(key: Key): Optic[Source, Next]
+
+}
+```
+
+---
+class: medium-code
+
+# Monocle 3: andThen + common shortcuts
+
+<br>
+
+```scala
+extension[Source, Key, Target] (optic: Optic[Source, Map[Key, Target]])
+
+  def index(key: Key): Optic[Source, Next]
+
+}
+```
+
+.forty-seven-left[
+## Before
+```scala
+paymentMethods
+  `.andThen(index(paymentName))`
+  .andThen(debitCard)
+  .andThen(expirationDate)
+```
+]
+
+.forty-seven-right[
+## After
+```scala
+paymentMethods
+  `.index(paymentName)`
+  .andThen(debitCard)
+  .andThen(expirationDate)
+```
+]
+
+---
+class: medium-code
+
+# Better documentation and discoverability
+
+```scala
+extension[Source, Key, Target] (optic: Optic[Source, Map[Key, Target]])
+
+  /** Zoom into the value at a specified key ... */
+  def index(key: Key): Optic[Source, Next]
+
+}
+```
 
 .center[
 <img src="img/index-doc.png" alt="Javadoc" style="width:800px;"/>
