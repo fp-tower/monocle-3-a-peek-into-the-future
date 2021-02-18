@@ -1013,27 +1013,39 @@ class: medium-code
 <br>
 
 ```scala
-val paymentMethods: `Lens`[User, Map[String, PaymentMethod]] =
+val paymentMethods: Lens[User, Map[String, PaymentMethod]] =
   Lens[User, Map[String, PaymentMethod]](_.paymentMethods)(
    (user, newPaymentMethods) => user.copy(paymentMethods = newPaymentMethods)
   )
 
-val debitCard: `Prism`[PaymentMethod, DebitCard] =
+val debitCard: Prism[PaymentMethod, DebitCard] =
   Prism.partial{ case pm: PaymentMethod => pm }(identity)
 
-val expirationDate: `Lens`[DebitCard, YearMonth] =
+val expirationDate: Lens[DebitCard, YearMonth] =
   Lens[DebitCard, YearMonth](_.expirationDate)(
    (debitCard, newExpirationDate) => debitCard.copy(expirationDate = newExpirationDate)
   )
 ```
 
-.forty-two-left[.center[
-## 1. Lots of boiler plate code
-]]
+.center[
+## Lots of boilerplate code
+]
 
-.fifty-two-right[.center[
-## 2. Requires to know the difference<br>between optics types
-]]
+---
+class: medium-code
+
+# Monocle 2 macros
+
+<br>
+
+```scala
+import monocle.macros.{GenLens, GenPrism}
+
+val paymentMethods = GenLens[User](_.paymentMethods)
+val debitCard      = GenPrism[PaymentMethod, DebitCard]
+val expirationDate = GenLens[DebitCard](_.expirationDate)
+```
+
 
 ---
 class: medium-code
@@ -1052,7 +1064,7 @@ val expirationDate = Gen`Lens`[DebitCard](_.expirationDate)
 
 <br>
 .center[
-## It still requires to know the difference between optics types
+## Requires to know the difference<br>between optics types
 ]
 
 ---
@@ -1216,25 +1228,35 @@ user
 ]
 
 ---
-class: center, middle
+class: medium-code
 
-# Expected behaviour<br><br>Contract
+# Contract or expected behaviour
 
+<br>
+
+.sixty-seven-left[
+```scala
+trait Optic[Source, Target] {
+
+  def get(source: Source): Target
+
+  def replace(newTarget: Target)(source: Source): Source
+
+  def modify(update: Target => Target)(source: Source): Source
+
+}
+```
+]
 ---
 class: medium-code
 # Problem 3: Expected behaviour
 
 .fifty-four-left[
+<br><br>
 ```scala
-trait Optic[Source, Target] {
-  def get ...
-  def replace ...
-  def modify ...
-}
-
 val user = User("Julien", 34, Address(12, "Cody Rd"))
 
-val userToStreetNumber: Optic[User, Int] =
+val optic: Optic[User, Int] =
   Focus[User](_.address.streetNumber)
 ```
 ]
@@ -1248,19 +1270,14 @@ class: medium-code
 # Problem 3: Expected behaviour
 
 .fifty-four-left[
+<br><br>
 ```scala
-trait Optic[Source, Target] {
-  def get ...
-  def replace ...
-  def modify ...
-}
-
 val user = User("Julien", 34, Address(12, "Cody Rd"))
 
-val userToStreetNumber: Optic[User, Int] =
+val optic: Optic[User, Int] =
   Focus[User](_.address.streetNumber)
 
-val newUser = userToStreetNumber.replace(`48`)(user)
+val newUser = optic.replace(`48`)(user)
 // User("Julien", 34, Address(`48`, "Cody Rd"))
 ```
 ]
@@ -1274,22 +1291,17 @@ class: medium-code
 # Problem 3: Expected behaviour
 
 .fifty-four-left[
+<br><br>
 ```scala
-trait Optic[Source, Target] {
-  def get ...
-  def replace ...
-  def modify ...
-}
-
 val user = User("Julien", 34, Address(12, "Cody Rd"))
 
-val userToStreetNumber: Optic[User, Int] =
+val optic: Optic[User, Int] =
   Focus[User](_.address.streetNumber)
 
-val newUser = userToStreetNumber.replace(`48`)(user)
+val newUser = optic.replace(`48`)(user)
 // User("Julien", 34, Address(`48`, "Cody Rd"))
 
-val newStreetNumber = userToStreetNumber.get(newUser)
+val newStreetNumber = optic.get(newUser)
 // `48`
 ```
 ]
@@ -1303,95 +1315,17 @@ class: medium-code
 # Problem 3: Expected behaviour
 
 .sixty-seven-left[
+<br><br>
 ```scala
-trait Optic[Source, Target] {
-  def get ...
-  def replace ...
-  def modify ...
-}
-
-val userToStreetNumber: Optic[User, Int] =
-  Focus[User](_.address.streetNumber)
-
-test(`"get what you replace"`){
-  forAll{ (user: User, newStreetNumber: Int) =>
-
-    val newUser = userToStreetNumber.replace(newStreetNumber)(user)
-
-    assertEquals(
-      userToStreetNumber.get(newUser),
-      newStreetNumber
-    )
-
-  }
-}
-```
-]
-
-.thirty-two-left[.center[
-<br><br><br><br><br>
-## &nbsp&nbsp&nbsp&nbspProperty-Based Testing<br>(PBT)
-]]
-
----
-class: medium-code
-# Problem 3: Expected behaviour
-
-.sixty-seven-left[
-```scala
-trait Optic[Source, Target] {
-  def get ...
-  def replace ...
-  def modify ...
-}
-
-val userToStreetNumber: Optic[User, Int] =
-  Focus[User](_.address.streetNumber)
-
-test("get what you replace"){
-  `forAll{ (user: User, newStreetNumber: Int)` =>
-
-    val newUser = userToStreetNumber.replace(newStreetNumber)(user)
-
-    assertEquals(
-      userToStreetNumber.get(newUser),
-      newStreetNumber
-    )
-
-  }
-}
-```
-]
-
-.thirty-two-left[.center[
-<br><br><br><br><br>
-## &nbsp&nbsp&nbsp&nbspProperty-Based Testing<br>(PBT)
-]]
-
----
-class: medium-code
-# Problem 3: Expected behaviour
-
-.sixty-seven-left[
-```scala
-trait Optic[Source, Target] {
-  def get ...
-  def replace ...
-  def modify ...
-}
-
-val userToStreetNumber: Optic[User, Int] =
+val optic: Optic[User, Int] =
   Focus[User](_.address.streetNumber)
 
 test("get what you replace"){
   forAll{ (user: User, newStreetNumber: Int) =>
 
-    val newUser = userToStreetNumber.`replace`(newStreetNumber)(user)
+    val newUser = optic.replace(newStreetNumber)(user)
 
-    `assertEquals`(
-      userToStreetNumber.`get`(newUser),
-      newStreetNumber
-    )
+    assertEquals(optic.get(newUser), newStreetNumber)
 
   }
 }
@@ -1399,33 +1333,24 @@ test("get what you replace"){
 ]
 
 .thirty-two-left[.center[
-<br><br><br><br><br>
+<br><br><br><br>
 ## &nbsp&nbsp&nbsp&nbspProperty-Based Testing<br>(PBT)
 ]]
 
 ---
 # Lego principle
 
-<br>
+<br><br><br><br>
 
-## When using a constructor, you .hl2[NEED] to run the tests
-
-```scala
-val address      = Optic[User, Address](_.address     )((newOne, user   ) => user.copy(address = newOne))
-
-val streetNumber = Optic[Address, Int] (_.streetNumber)((newOne, address) => address.copy(streetNumber = newOne))
-```
-
-## When using a combinator, you .hl2[DON'T NEED] to run the tests
-
-```scala
-address andThen streetNumber
-```
+.center[
+## If two optics are .hl2[VALID],
+## combining them will produce a .hl2[VALID] optic
+]
 
 ---
 class: medium-code
 # Zip can break the expected behaviour
-
+<br>
 .fifty-four-left[
 ```scala
 trait Optic[Source, Target] {
@@ -1449,6 +1374,7 @@ val nameAndStreetNumber: Optic[User, (String, Int)] =
 class: medium-code
 # Zip can break the expected behaviour
 
+<br>
 .fifty-four-left[
 ```scala
 trait Optic[Source, Target] {
@@ -1475,6 +1401,7 @@ nameAndStreetNumber.`get`(user)
 class: medium-code
 # Zip can break the expected behaviour
 
+<br>
 .fifty-four-left[
 ```scala
 trait Optic[Source, Target] {
@@ -1505,6 +1432,7 @@ nameAndStreetNumber.`replace`(user, (`"Bob", 48`))
 class: medium-code
 # Zip can break the expected behaviour
 
+<br>
 .fifty-four-left[
 ```scala
 trait Optic[Source, Target] {
@@ -1525,6 +1453,7 @@ val nameTwice: Optic[User, (String, String)] =
 class: medium-code
 # Zip can break the expected behaviour
 
+<br>
 .sixty-two-left[
 ```scala
 trait Optic[Source, Target] {
@@ -1548,6 +1477,7 @@ val updatedUser = nameTwice.`replace`((`"Bob", "Alice"`))(user)
 class: medium-code
 # Zip can break the expected behaviour
 
+<br>
 .sixty-two-left[
 ```scala
 trait Optic[Source, Target] {
@@ -1579,6 +1509,34 @@ nameTwice.get(updatedUser)
 ---
 # Solution: Documentation
 
+<br>
+```scala
+trait Optic[Source, Target] {
+  // Zip two optics together that starts with the same Source type
+  // {{
+  //   val nameOptic: Optic[User, String] = ...
+  //   val ageOptic : Optic[User, Int]    = ...
+  //
+  //   nameOptic.zip(ageOptic).get(user)
+  //   res: (String, Int) = ("Bob", 42)
+  // }}
+  // WARNING: This combinator can break the "get what you replace" property
+  // if you zip two optics that focus on the same data. For example:
+  // {{
+  //   val broken   = nameOptic.zip(nameOptic)
+  //   val newNames = ("Bob", "Alice")
+  //   val newUser  = broken.replace(newNames)(user)
+  //
+  //   broken.get(newUser) != newNames
+  // }}
+  def zip[Other](other: Optic[Source, Other]): Optic[Source, (Target, Other)]
+}
+```
+
+---
+# Solution: Documentation
+
+<br>
 ```scala
 trait Optic[Source, Target] {
   // Zip two optics together that starts with the same Source type
@@ -1626,7 +1584,7 @@ trait Optic[Source, Target] {
 .forty-seven-left[
 # Monocle 2
 
-## Boiler platy
+## Requires lots of boilerplate
 
 ## Requires too much knowledge
 
@@ -1636,13 +1594,11 @@ trait Optic[Source, Target] {
 .forty-seven-right[
 # Monocle 3
 
-## overloaded andThen
-
-## Shortcuts for "index", "each", ...
-
-## Softer stance on "laws"
+## overloaded andThen + shortcuts
 
 ## Focus macro
+
+## Softer stance on the"laws"
 ]
 
 ---
