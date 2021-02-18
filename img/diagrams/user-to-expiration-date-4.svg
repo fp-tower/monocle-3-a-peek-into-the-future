@@ -23,14 +23,14 @@
       </g>
     </marker>
   </defs>
-  <metadata> Produced by OmniGraffle 7.18.2\n2021-02-15 11:10:14 +0000</metadata>
+  <metadata> Produced by OmniGraffle 7.18.2\n2021-02-18 11:43:24 +0000</metadata>
   <g id="user-to-expiration-date-4" stroke-dasharray="none" fill="none" stroke="none" fill-opacity="1" stroke-opacity="1">
     <title>user-to-expiration-date-4</title>
     <rect fill="white" x="0" y="0" width="541" height="523"/>
     <g id="user-to-expiration-date-4_Layer_1">
       <title>Layer 1</title>
       <g id="Graphic_662">
-        <path d="M 201.76324 406.58767 L 203.23265 490.77046 C 203.36277 498.2252 197.42502 504.3739 189.97032 504.504 L 189.97032 504.504 C 182.5156 504.63414 176.36689 498.6964 176.23676 491.2417 C 176.23676 491.2417 176.23676 491.2417 176.23676 491.2417 L 174.76735 407.0589 C 174.63723 399.60417 180.57498 393.45545 188.02968 393.32533 L 188.02968 393.32533 C 195.4844 393.1952 201.63311 399.13296 201.76324 406.58767 C 201.76324 406.58767 201.76324 406.58767 201.76324 406.58767 Z" fill="#ff9e67" fill-opacity=".80141525"/>
+        <path d="M 201.76324 406.58767 L 203.23265 490.77046 C 203.36277 498.2252 197.42502 504.3739 189.97032 504.504 L 189.97032 504.504 C 182.5156 504.63414 176.36689 498.6964 176.23676 491.2417 C 176.23676 491.2417 176.23676 491.2417 176.23676 491.2417 L 174.76735 407.0589 C 174.63723 399.60417 180.57498 393.45545 188.02968 393.32533 L 188.02968 393.32533 C 195.4844 393.1952 201.63311 399.13296 201.76324 406.58767 C 201.76324 406.58767 201.76324 406.58767 201.76324 406.58767 Z" fill="#eabc00"/>
       </g>
       <g id="Line_636">
         <line x1="266.2296" y1="64.67906" x2="336.3734" y2="114.45855" marker-end="url(#FilledArrow_Marker)" stroke="#404040" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
@@ -123,7 +123,7 @@
         </text>
       </g>
       <g id="Graphic_653">
-        <ellipse cx="58.5" cy="495" rx="49.5000790961439" ry="27.0000431433512" fill="#70a3d8" fill-opacity=".5"/>
+        <ellipse cx="58.5" cy="495" rx="49.5000790961439" ry="27.0000431433512" fill="#589b9d" fill-opacity=".5"/>
         <ellipse cx="58.5" cy="495" rx="49.5000790961439" ry="27.0000431433512" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
         <text transform="translate(23.9 476.552)" fill="white">
           <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="white" x="17.263998" y="15">Card</tspan>
@@ -131,7 +131,7 @@
         </text>
       </g>
       <g id="Graphic_652">
-        <ellipse cx="319.5" cy="495" rx="49.5000790961438" ry="27.0000431433512" fill="#70a3d8" fill-opacity=".4048593"/>
+        <ellipse cx="319.5" cy="495" rx="49.5000790961438" ry="27.0000431433512" fill="#589b9d" fill-opacity=".5"/>
         <ellipse cx="319.5" cy="495" rx="49.5000790961438" ry="27.0000431433512" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="1"/>
         <text transform="translate(284.9 476.552)" fill="white">
           <tspan font-family="Helvetica Neue" font-size="16" font-weight="400" fill="white" x="5.4159985" y="15">Security</tspan>
