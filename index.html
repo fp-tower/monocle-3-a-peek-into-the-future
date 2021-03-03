@@ -255,11 +255,7 @@ sealed trait PaymentMethod
 
 case class PayPal(email: String) extends PaymentMethod
 
-case class DebitCard(
-  cardNumber     : String,
-  expirationDate : YearMonth,
-  securityCode   : Int
-) extends PaymentMethod
+case class DebitCard(cardNumber: String, expirationDate: YearMonth, securityCode: Int) extends PaymentMethod
 ```
 
 ---
@@ -728,9 +724,9 @@ class: medium-code
 ```scala
 def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
   paymentMethods
-    .compose`Optional`(index(paymentName))
-    .compose`Prism`(debitCard)
-    .compose`Lens`(expirationDate)
+    .`composeOptional`(index(paymentName))
+    .`composePrism`(debitCard)
+    .`composeLens`(expirationDate)
     .replace(newExpiry)(user)
 ```
 
