@@ -1,0 +1,1535 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Monocle 3: a peek into the future</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+    <!-- Primary Meta Tags -->
+    <title>Monocle 3: A peek into the future</title>
+    <meta name="title" content="Monocle 3: A peek into the future">
+    <meta name="description" content="Optics is a popular topic among library authors; they exist in at least four flavours in Scala: Monocle, Quicklens, Shapeless and Tofu. However, we rarely see optics in real world code bases.
+Why is that? Why are optics not popular in Scala?">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://metatags.io/">
+    <meta property="og:title" content="Monocle 3: A peek into the future">
+    <meta property="og:description" content="Optics is a popular topic among library authors; they exist in at least four flavours in Scala: Monocle, Quicklens, Shapeless and Tofu. However, we rarely see optics in real world code bases.
+Why is that? Why are optics not popular in Scala?">
+    <meta property="og:image" content="https://github.com/fp-tower/monocle-3-a-peek-into-the-future/blob/gh-pages/img/fp-tower/social-preview.png?raw=true">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://metatags.io/">
+    <meta property="twitter:title" content="Monocle 3: A peek into the future">
+    <meta property="twitter:description" content="Optics is a popular topic among library authors; they exist in at least four flavours in Scala: Monocle, Quicklens, Shapeless and Targetfu. However, we rarely see optics in real world code bases.
+Why is that? Why are optics not popular in Scala?">
+    <meta property="twitter:image" content="https://raw.githubusercontent.com/fp-tower/monocle-3-a-peek-into-the-future/gh-pages/img/fp-tower/social-preview.png">
+  </head>
+  <body>
+    <textarea id="source">
+
+
+layout: true
+
+<div class="watermark">
+  <a href="https://github.com/fp-tower">
+    <img src="img/fp-tower/grey-4-fp-watermark-image-raster-transparent-file.png" alt="logo" style="width:200px;"/>
+  </a>
+</div>
+
+
+---
+background-image: url(img/title.svg)
+
+
+
+---
+# Julien Truffaut
+
+<br>
+
+.thirty-seven-left[
+<img src="img/fp-tower/julien-truffaut.jpg" alt="Julien Truffaut" style="width:300px;"/>
+]
+
+.sixty-two-right[<br>
+## Backend Scala developer
+
+## FP trainer at fp-tower.com
+
+## Maintainer of &nbsp<img src="img/fp-tower/monocle-logo.png" alt="Monocle" style="width:150px;"/>
+]
+
+---
+# Objectives
+
+<br><br>
+
+## 1. Why do we need optics? What are they?
+
+## 2. Current issues with Monocle API and how we intend to fix them
+
+---
+# Mutation
+
+<br>
+
+
+
+```scala
+case class User(`var` name: String, `var` address: Address)
+
+case class Address(`var` streetNumber: Int, `var` postcode: String)
+```
+
+---
+# Mutation
+
+<br>
+
+```scala
+case class User(var name: String, var address: Address)
+
+case class Address(var streetNumber: Int, var postcode: String)
+```
+
+<br>
+
+```scala
+val julien = User("julien", Address(`12`, "E16 4SR"))
+
+julien.address.streetNumber
+// res1: Int = `12`
+```
+
+---
+# Mutation
+
+<br>
+
+
+```scala
+case class User(var name: String, var address: Address)
+
+case class Address(var streetNumber: Int, var postcode: String)
+```
+
+<br>
+
+```scala
+val julien = User("julien", Address(12, "E16 4SR"))
+
+julien.address.streetNumber
+// res1: Int = 12
+
+julien.address.streetNumber `= 16`
+
+julien
+// res2: User = User("julien", Address(`16`, "E16 4SR"))
+```
+
+---
+# FP uses immutable data
+
+<br>
+
+## 1. Free features: rollback, versioning
+
+## 2. Easier to test
+
+## 3. Manageable concurrency
+
+---
+# Concurrency
+
+.twenty-seven-left[
+<img src="img/corecursive_400x400.jpg" alt="corecursive" style="width:300px;"/>
+]
+
+.sixty-two-right[
+<br>
+<div class="quote">
+  <blockquote>
+    <p>We had an engineer at Mozilla who decided to use a thread sanitiser tool to look for data races
+    [in our C ++ codebase] ... and he found that in every case where Firefox used threads, there were
+    data races. Not most cases - every single case.</p>
+    <cite>Jim Blandy</cite>
+  </blockquote>
+</div>
+]
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+.center[
+## CoRecursive podcast: Rust and bitter C++ developers
+]
+
+---
+class: center, middle
+
+# How do we change something immutable?
+
+---
+<br><br><br>
+.center[
+<img src="img/impurepics/Lightbulb-0.png" alt="Lightbub 0" style="width:1000px;"/>
+]
+.reference-top-left[.large[@impurepics]]
+
+---
+<br><br><br>
+.center[
+<img src="img/impurepics/Lightbulb-1.png" alt="Lightbub 1" style="width:1000px;"/>
+]
+.reference-top-left[.large[@impurepics]]
+
+---
+<br><br><br>
+.center[
+<img src="img/impurepics/Lightbulb-2.png" alt="Lightbub 2" style="width:1000px;"/>
+]
+.reference-top-left[.large[@impurepics]]
+
+---
+<br><br><br>
+.center[
+<img src="img/impurepics/Lightbulb-3.png" alt="Lightbub 3" style="width:1000px;"/>
+]
+.reference-top-left[.large[@impurepics]]
+
+---
+<br><br><br>
+.center[
+<img src="img/impurepics/Lightbulb-4.png" alt="Lightbub 4" style="width:1000px;"/>
+]
+.reference-top-left[.large[@impurepics]]
+
+---
+<br><br><br>
+.center[
+<img src="img/impurepics/Lightbulb-5.png" alt="Lightbub 5" style="width:1000px;"/>
+]
+.reference-top-left[.large[@impurepics]]
+
+---
+class: center, middle
+
+# How do we copy objects in Scala?
+
+---
+# Example #1: Simple case
+
+<br>
+
+
+```scala
+case class User(name: String, address: Address)
+case class Address(streetNumber: Int, postcode: String)
+
+val julien = User("Julien", Address(`12`, "E16 4SR"))
+```
+
+.center[
+## How do we change the .hl2[street number] using .hl2[vanilla Scala]?
+]
+
+--
+
+
+```scala
+julien.`copy`(address =
+  julien.address.`copy`(streetNumber = 16)
+)
+// res1: User = User("Julien", Address(`16`, "E16 4SR"))
+```
+
+---
+# Example #2: Enumeration
+
+<br>
+
+```scala
+import java.time.YearMonth
+
+sealed trait PaymentMethod
+
+case class PayPal(email: String) extends PaymentMethod
+
+case class DebitCard(cardNumber: String, expirationDate: YearMonth, securityCode: Int) extends PaymentMethod
+```
+
+---
+# Example #2: Enumeration
+
+<br>
+
+
+
+```scala
+case class User(name: String, address: Address, paymentMethod: PaymentMethod)
+
+val julien = User(
+  "Julien",
+  Address(12, "E16 4SR"),
+  DebitCard("4568 5794 3109 3087", YearMonth.of(`2022, 4`), 361)
+)
+
+val anna = User("Anna", Address(10, "EC2M 7EB"), PayPal("anna@fp-tower.com"))
+```
+
+.center[
+## How do we change the .hl2[expiry date] using .hl2[vanilla Scala]?
+]
+
+---
+# Example #2: Enumeration
+
+<br>
+
+```scala
+def updateExpiry(user: User, newExpiry: YearMonth): User =
+  user.`copy`(paymentMethod =
+    user.paymentMethod.`copy`(expirationDate = newExpiry)
+  )
+```
+
+
+---
+# Example #2: Enumeration
+
+<br>
+
+
+```scala
+def updateExpiry(user: User, newExpiry: YearMonth): User =
+  user.copy(paymentMethod =
+    user.paymentMethod.`copy`(expirationDate = newExpiry)
+  )
+
+// error: value `copy is not a member of PaymentMethod`
+//   user.paymentMethod.copy(expirationDate = newExpiry)
+//   ^^^^^^^^^^^^^^^^^^^^^^^
+```
+
+.center[
+## How do we modify an enumeration?
+]
+
+---
+# Example #2: Enumeration
+
+<br>
+
+```scala
+def updateExpiry(user: User, newExpiry: YearMonth): User =
+  user.copy(paymentMethod =
+    user.paymentMethod `match` {
+      `case` card  : DebitCard => ???
+      `case` paypal: PayPal    => ???
+    }
+  )
+```
+
+---
+# Example #2: Enumeration
+
+<br>
+
+```scala
+def updateExpiry(user: User, newExpiry: YearMonth): User =
+  user.copy(paymentMethod =
+    user.paymentMethod match {
+      case card  : DebitCard => card.`copy`(expirationDate = newExpiry)
+      case paypal: PayPal    => ???
+    }
+  )
+```
+
+---
+# Example #2: Enumeration
+
+<br>
+
+```scala
+def updateExpiry(user: User, newExpiry: YearMonth): User =
+  user.copy(`paymentMethod` =
+    user.paymentMethod match {
+      case card  : DebitCard => card.copy(expirationDate = newExpiry)
+      case paypal: PayPal    => ???
+    }
+  )
+```
+
+---
+# Example #2: Enumeration
+
+<br>
+
+```scala
+def updateExpiry(user: User, newExpiry: YearMonth): User =
+  user.copy(paymentMethod =
+    user.paymentMethod match {
+      case card: DebitCard => card.copy(expirationDate = newExpiry)
+      case _   : PayPal    => user.paymentMethod // do nothing
+    }
+  )
+```
+
+---
+# Example #2: Enumeration
+
+<br>
+
+```scala
+def updateExpiry(user: User, newExpiry: YearMonth): User =
+  user.copy(paymentMethod =
+    user.paymentMethod match {
+      case card: DebitCard => card.copy(expirationDate = newExpiry)
+      case _   : PayPal    => user.paymentMethod // do nothing
+    }
+  )
+```
+
+
+.small-code[
+.forty-seven-left[
+```scala
+updateExpiry(julien, YearMonth.of(`2024, 1`))
+// res: User = User(
+//   "Julien",
+//   Address(12, "E16 4SR"),
+//   DebitCard("4568 5794 3109 3087", `2024-01`, 361)
+// )
+```
+]
+
+.forty-seven-right[
+```scala
+updateExpiry(anna, YearMonth.of(`2024, 1`))
+// res: User = User(
+//   "Anna",
+//   Address(10, "EC2M 7EB"),
+//   `PayPal("anna@fp-tower.com")`
+// )
+```
+]
+]
+
+---
+# Example #3: Data structure
+
+<br>
+
+
+
+```scala
+case class User(name: String, address: Address, paymentMethods: `Map[String, PaymentMethod]`)
+
+val julien = User(
+  "Julien",
+  Address(12, "E16 4SR"),
+  Map(
+    "Business" -> PayPal("julien@fp-tower.com"),
+    `"Personal"` -> DebitCard("4568 8980 2376 5431", YearMonth.of(`2021, 7`), 995)
+  )
+)
+```
+
+.center[
+## How do we change the .hl2[expiry date] of the .hl2["Personal"] payment method?
+]
+
+---
+# Example #3: Data structure
+
+<br>
+
+
+```scala
+def updateExpiry(user: User, `paymentName`: String, newExpiry: YearMonth): User =
+  user.copy(paymentMethods =
+    user.paymentMethods.`get(paymentName)` match {
+      case None                    => ???
+      case Some(payPal: PayPal)    => ???
+      case Some(card  : DebitCard) => ???
+    }
+  )
+```
+
+---
+# Example #3: Data structure
+
+<br>
+
+```scala
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  user.copy(paymentMethods =
+    user.paymentMethods.get(paymentName) match {
+      case `None | Some(_: PayPal)` => user.paymentMethods // do nothing
+      case Some(card: DebitCard) => ???
+    }
+  )
+```
+
+---
+# Example #3: Data structure
+
+<br>
+
+```scala
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  user.copy(paymentMethods =
+    user.paymentMethods.get(paymentName) match {
+      case None | Some(_: PayPal) => user.paymentMethods // do nothing
+      case Some(card: DebitCard)  =>
+        val updatedCard = card.`copy`(expirationDate = `newExpiry`)
+        user.paymentMethods.updated(paymentName, updatedCard)
+    }
+  )
+```
+
+---
+# Example #3: Data structure
+
+<br>
+
+```scala
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  user.copy(paymentMethods =
+    user.paymentMethods.get(paymentName) match {
+      case None | Some(_: PayPal) => user.paymentMethods // do nothing
+      case Some(card: DebitCard)  =>
+        val updatedCard = card.copy(expirationDate = newExpiry)
+        user.paymentMethods.`updated`(paymentName, `updatedCard`)
+    }
+  )
+```
+
+---
+# Optic
+
+<br>
+
+.fifty-seven-left[
+```scala
+trait Optic[`Source`, `Target`] {
+
+  def get(source: Source): Target
+
+
+  def replace(newTarget: Target)(source: Source): Source
+
+
+  def modify(update: Target => Target)(source: Source): Source
+}
+```
+]
+
+---
+# Optic
+
+<br>
+
+.fifty-seven-left[
+```scala
+trait Optic[Source, Target] {
+
+  def get(source: Source): Target
+
+
+  def replace(newTarget: Target)(source: Source): Source
+
+
+  def modify(update: Target => Target)(source: Source): Source
+}
+```
+]
+
+.forty-two-right[
+```scala
+val name: Optic[User, String] = ...
+
+name.get(user)
+// res: String = `"Julien"`
+
+name.replace("Bob")(user)
+// res: User = User(`"Bob"`, Address(12, ...
+
+name.modify(_.toUpperCase)(user)
+// res: User = User(`"JULIEN"`, Address(12, ...
+```
+]
+
+---
+# Optics: Lens, Optional, Traversal, Prism, Iso, ...
+
+
+<br>
+
+```scala
+trait Optic[Source, Target] {
+
+  def get      (source: Source): `       Target ` // Lens , Iso
+  def getOption(source: Source): `Option[Target]` // Prism, Optional
+  def getAll   (source: Source): `  List[Target]` // Fold , Traversal
+
+  def replace(newTarget: Target)(source: Source): Source
+
+  def modify(update: Target => Target)(source: Source): Source
+
+}
+```
+
+---
+# Optics composition
+
+<br>
+
+```scala
+trait Optic[Source, Target] {
+
+  def andThen[Next](other: Optic[Target, Next]): Optic[Source, Next]
+
+}
+```
+
+.center[
+<img src="img/diagrams/optics-composition.svg" alt="Optics composition" style="width:800px;"/>
+]
+
+---
+# Optics composition
+
+.fifty-two-right[
+<br><br><br><br>
+```scala
+ paymentMethods
+  .andThen(index("Personal"))
+  .andThen(debitCard)
+  .andThen(expirationDate)
+```
+]
+
+<img src="img/diagrams/user-to-expiration-date-5.svg" alt="User to expiration date " style="width:430px;"/>
+
+---
+# Optics composition
+
+.fifty-two-right[
+<br><br><br><br>
+```scala
+ `paymentMethods`
+  .andThen(index("Personal"))
+  .andThen(debitCard)
+  .andThen(expirationDate)
+```
+]
+
+
+<img src="img/diagrams/user-to-expiration-date-1.svg" alt="User to expiration date " style="width:430px;"/>
+
+---
+# Optics composition
+
+.fifty-two-right[
+<br><br><br><br>
+```scala
+ paymentMethods
+  .andThen(`index("Personal")`)
+  .andThen(debitCard)
+  .andThen(expirationDate)
+```
+]
+
+<img src="img/diagrams/user-to-expiration-date-2.svg" alt="User to expiration date " style="width:430px;"/>
+
+---
+# Optics composition
+
+.fifty-two-right[
+<br><br><br><br>
+```scala
+ paymentMethods
+  .andThen(index("Personal"))
+  .andThen(`debitCard`)
+  .andThen(expirationDate)
+```
+]
+
+<img src="img/diagrams/user-to-expiration-date-3.svg" alt="User to expiration date " style="width:430px;"/>
+
+---
+# Optics composition
+
+.fifty-two-right[
+<br><br><br><br>
+```scala
+ paymentMethods
+  .andThen(index("Personal"))
+  .andThen(debitCard)
+  .andThen(`expirationDate`)
+```
+]
+
+<img src="img/diagrams/user-to-expiration-date-4.svg" alt="User to expiration date " style="width:430px;"/>
+
+---
+class: medium-code
+
+# Why optics are not popular in Scala?
+
+<br>
+
+
+.center[.twelve-left[
+
+<br>
+## Vanilla<br>Scala
+
+<br><br>
+## Optics
+]]
+
+.eighty-two-right[
+
+```scala
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  user.copy(paymentMethods =
+    user.paymentMethods.get(paymentName) match {
+      case None | Some(_: PayPal) => user.paymentMethods
+      case Some(card: DebitCard)  =>
+        val updatedCard = card.copy(expirationDate = newExpiry)
+        user.paymentMethods.updated(paymentName, updatedCard)
+    }
+  )
+```
+
+```scala
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  paymentMethods
+    .andThen(index(paymentName))
+    .andThen(debitCard)
+    .andThen(expirationDate)
+    .replace(newExpiry)(user)
+```
+]
+
+---
+class: medium-code
+
+# Problem #1: Multiple compose methods
+
+<br>
+
+```scala
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  paymentMethods
+    .`composeOptional`(index(paymentName))
+    .`composePrism`(debitCard)
+    .`composeLens`(expirationDate)
+    .replace(newExpiry)(user)
+```
+
+## Monocle 2: one compose method per type of optic
+
+```scala
+trait Optic[Source, Target] {
+  def compose`Optional`[Next](other: `Optional`[Target, Next]): Optic[Source, Next]
+  def compose`Prism`   [Next](other: `Prism`   [Target, Next]): Optic[Source, Next]
+  def compose`Lens`    [Next](other: `Lens`    [Target, Next]): Optic[Source, Next]
+  ...
+}
+```
+
+---
+class: medium-code
+
+# Solution: Overloaded methods
+
+<br>
+
+```scala
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  paymentMethods
+    .andThen(index(paymentName))
+    .andThen(debitCard)
+    .andThen(expirationDate)
+    .replace(newExpiry)(user)
+```
+
+<br>
+
+```scala
+trait Optic[Source, Target] {
+  def andThen[Next](other: Optional[Target, Next]): Optic[Source, Next]
+  def andThen[Next](other: Prism   [Target, Next]): Optic[Source, Next]
+  def andThen[Next](other: Lens    [Target, Next]): Optic[Source, Next]
+  ...
+}
+```
+
+---
+class: medium-code
+
+# Problem: Type inference hates overloads
+
+<br>
+
+```scala
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  paymentMethods
+    .`andThen(index(paymentName))`
+    .andThen(debitCard)
+    .andThen(expirationDate)
+    .replace(newExpiry)(user)
+```
+
+<br>
+
+```scala
+// error: ambiguous implicit values
+//        both method `mapIndex` of type ... and method `listMapIndex` of type ...
+//        match expected type `Index[Source, String, Target]`
+```
+
+---
+class: medium-code
+
+# Monocle 3: andThen + common shortcuts
+
+<br>
+
+```scala
+extension[Source, Key, Target] (optic: Optic[Source, `Map[Key, Target]`])
+
+  def index(key: Key): Optic[Source, Next]
+
+}
+```
+
+---
+class: medium-code
+
+# Monocle 3: andThen + common shortcuts
+
+<br>
+
+```scala
+extension[Source, Key, Target] (optic: Optic[Source, Map[Key, Target]])
+
+  def index(key: Key): Optic[Source, Next]
+
+}
+```
+
+.forty-seven-left[
+## Before
+```scala
+paymentMethods
+  `.andThen(index(paymentName))`
+  .andThen(debitCard)
+  .andThen(expirationDate)
+```
+]
+
+.forty-seven-right[
+## After
+```scala
+paymentMethods
+  `.index(paymentName)`
+  .andThen(debitCard)
+  .andThen(expirationDate)
+```
+]
+
+---
+class: medium-code
+
+# Better documentation and discoverability
+
+```scala
+extension[Source, Key, Target] (optic: Optic[Source, Map[Key, Target]])
+
+  /** Zoom into the value at a specified key ... */
+  def index(key: Key): Optic[Source, Next]
+
+}
+```
+
+.center[
+<img src="img/index-doc.png" alt="Javadoc" style="width:800px;"/>
+]
+
+---
+class: medium-code
+
+# Problem #2: Optics creation
+
+<br>
+
+```scala
+val paymentMethods: Optic[User, Map[String, PaymentMethod]] = ...
+val debitCard     : Optic[PaymentMethod, DebitCard] = ...
+val expirationDate: Optic[DebitCard, YearMonth] = ...
+```
+
+.sixty-seven-left[
+```scala
+def index[Key, Value](key: Key): Optic[Map[Key, Value], Value] = ...
+```
+]
+
+
+<br><br><br><br>
+
+```scala
+def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
+  paymentMethods
+    .andThen(index(paymentName))
+    .andThen(debitCard)
+    .andThen(expirationDate)
+    .replace(user, newExpiry)
+```
+
+---
+class: medium-code
+
+# Problem #2: Optics creation
+
+<br>
+
+```scala
+val paymentMethods: Lens[User, Map[String, PaymentMethod]] =
+  Lens[User, Map[String, PaymentMethod]](_.paymentMethods)(
+   (user, newPaymentMethods) => user.copy(paymentMethods = newPaymentMethods)
+  )
+
+val debitCard: Prism[PaymentMethod, DebitCard] =
+  Prism.partial{ case pm: PaymentMethod => pm }(identity)
+
+val expirationDate: Lens[DebitCard, YearMonth] =
+  Lens[DebitCard, YearMonth](_.expirationDate)(
+   (debitCard, newExpirationDate) => debitCard.copy(expirationDate = newExpirationDate)
+  )
+```
+
+.center[
+## Lots of boilerplate code
+]
+
+---
+class: medium-code
+
+# Monocle 2 macros
+
+<br>
+
+```scala
+import monocle.macros.{GenLens, GenPrism}
+
+val paymentMethods = GenLens[User](_.paymentMethods)
+val debitCard      = GenPrism[PaymentMethod, DebitCard]
+val expirationDate = GenLens[DebitCard](_.expirationDate)
+```
+
+
+---
+class: medium-code
+
+# Monocle 2 macros
+
+<br>
+
+```scala
+import monocle.macros.{GenLens, GenPrism}
+
+val paymentMethods = Gen`Lens`[User](_.paymentMethods)
+val debitCard      = Gen`Prism`[PaymentMethod, DebitCard]
+val expirationDate = Gen`Lens`[DebitCard](_.expirationDate)
+```
+
+<br>
+.center[
+## Requires to know the difference<br>between optics types
+]
+
+---
+background-image: url(img/lotr-focus.jpg)
+
+---
+class: medium-code
+
+# Solution: Focus macro (Scala 3)
+
+<br>
+
+```scala
+import monocle.Focus
+
+Focus[User](_.address.streetNumber)
+// res: `Lens`[User, Int]
+```
+
+---
+class: medium-code
+
+# Solution: Focus macro (Scala 3)
+
+<br>
+
+```scala
+import monocle.Focus
+
+Focus[User](_.address.streetNumber)
+// res: Lens[User, Int]
+
+Focus[User](_.paymentMethods.`index("Personal")`)
+// res: `Optional`[User, PaymentMethod]
+```
+
+---
+class: medium-code
+
+# Solution: Focus macro (Scala 3)
+
+<br>
+
+```scala
+import monocle.Focus
+
+Focus[User](_.address.streetNumber)
+// res: Lens[User, Int]
+
+Focus[User](_.paymentMethods.index("Personal"))
+// res: Optional[User, `PaymentMethod`]
+```
+
+---
+class: medium-code
+
+# Solution: Focus macro (Scala 3)
+
+<br>
+
+```scala
+import monocle.Focus
+
+Focus[User](_.address.streetNumber)
+// res: Lens[User, Int]
+
+Focus[User](_.paymentMethods.index("Personal").`as[DebitCard]`)
+// res: Optional[User, `DebitCard`]
+```
+
+---
+class: medium-code
+
+# Solution: Focus macro (Scala 3)
+
+<br>
+
+```scala
+import monocle.Focus
+
+Focus[User](_.address.streetNumber)
+// res: Lens[User, Int]
+
+Focus[User](_.paymentMethods.index("Personal").as[DebitCard].`expirationDate`)
+// res: Optional[User, `YearMonth`]
+```
+
+---
+class: medium-code
+
+# Solution: Focus macro (Scala 3)
+
+<br>
+
+```scala
+import monocle.Focus
+
+Focus[User](_.address.streetNumber)
+// res: Lens[User, Int]
+
+Focus[User](_.paymentMethods.index("Personal").as[DebitCard].expirationDate)
+// res: Optional[User, YearMonth]
+
+Focus[User](_.paymentMethods.`each`.as[DebitCard].cardNumber)
+// res: `Traversal`[User, String]
+```
+
+---
+class: medium-code
+
+# Solution: Focus macro (Scala 3)
+
+<br>
+
+```scala
+import monocle.Focus
+
+Focus[User](_.address.streetNumber)
+// res: Lens[User, Int]
+
+Focus[User](_.paymentMethods.index("Personal").as[DebitCard].expirationDate)
+// res: Optional[User, YearMonth]
+
+Focus[User](_.paymentMethods.each.as[DebitCard].cardNumber)
+// res: Traversal[User, String]
+```
+
+<br>
+
+.center[
+## Thanks to .hl2[Yilin Wei] and .hl2[Ken Scambler]
+]
+
+---
+class: medium-code
+
+# Bonus: Partially applied optics
+
+<br>
+
+```scala
+import monocle.syntax.all._
+
+user
+  .focus(_.address.streetNumber)
+  .replace(12)
+// res: User = ...
+
+user
+  .focus(_.paymentMethods.each.as[DebitCard].expirationDate)
+  .modify(_.plusYears(2))
+// res: User = ...
+```
+
+
+---
+# Summary
+
+
+
+.fifty-seven-left[
+<br><br><br>
+## Difficult to transform immutable data
+
+## Optics offers a path-like API to<br>get/replace/modify a target
+]
+
+.thirty-seven-left[
+<img src="img/diagrams/user-to-expiration-date-5.svg" alt="User to expiration date " style="width:450px;"/>
+]
+
+---
+<br><br><br><br>
+
+.forty-seven-left[
+# Monocle 2
+
+## Requires lots of boilerplate
+
+## Requires too much knowledge
+]
+
+.forty-seven-right[
+# Monocle 3
+
+## Overloaded andThen + shortcuts
+
+## Focus macro
+
+## Much more
+]
+
+---
+class: medium-code
+
+<br><br><br><br><br><br>
+.center[
+# Monocle 3 is available today
+
+## for Scala 2.13 and 3.0.0
+]
+
+
+```scala
+libraryDependencies ++= Seq(
+ "dev.optics" %% "monocle-core"  % `"3.0.0-RC1"`,
+ "dev.optics" %% "monocle-macro" % `"3.0.0-RC1"`, // Not required for Scala 3
+)
+```
+
+
+---
+# Join the team
+
+ <br><br><br>
+
+ <div class="row">
+  <div class="column">
+    <div class="card">
+      <img src="img/CarlosQuiroz.png" alt="Carlos Quiroz" style="width:98%">
+      <div class="container">
+        <h3>Carlos Quiroz</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="column">
+    <div class="card">
+      <img src="img/KenScambler.jpg" alt="Ken Scambler" style="width:90%">
+      <div class="container">
+        <h3>Ken Scambler</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="column">
+    <div class="card">
+      <img src="img/fp-tower/julien-truffaut-square.png" alt="Julien Truffaut" style="width:100%"/>
+      <div class="container">
+        <h3>Julien Truffaut</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="column">
+    <div class="card">
+      <img src="img/YilinWei.png" alt="Yilin Wei" style="width:99%">
+      <div class="container">
+        <h3>Yilin Wei</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="column">
+    <div class="card">
+      <img src="img/question-mark-profile.png" alt="You" style="width:99%">
+      <div class="container">
+        <h3>Yourself</h3>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+---
+background-image: url(img/fp-tower/website-background.svg)
+
+class: center, middle, white
+
+# .white[Join the raffle to win]
+.title[Two 30-day free licences]
+
+<br><br>
+# .white[www.fp-tower.com/courses/foundations]
+
+
+---
+background-image: url(img/fp-tower/website-background.svg)
+
+class: center, middle, white
+
+.title[Monocle 4]
+
+
+
+---
+# Error reporting: Missing key
+
+.fifty-two-right[
+<br><br><br>
+```scala
+ paymentMethods
+  .`andThen(index("Personal"))`
+  .andThen(debitCard)
+  .andThen(expirationDate)
+```
+
+.center[
+### There is a no "Personal" payment method
+]
+]
+
+<br>
+<img src="img/diagrams/user-to-expiration-date-error-1.svg" alt="User to expiration date " style="width:500px;"/>
+
+
+
+---
+# Error reporting: Invalid payment method
+
+.fifty-two-right[
+<br><br><br>
+```scala
+ paymentMethods
+  .andThen(index("Personal"))
+  .`andThen(debitCard)`
+  .andThen(expirationDate)
+```
+
+.center[
+### There is a "Personal" payment method but it is a Paypal account
+]
+]
+
+<br>
+<img src="img/diagrams/user-to-expiration-date-error-2.svg" alt="User to expiration date " style="width:500px;"/>
+
+---
+class: medium-code
+
+# Monocle 2 & 3: replaceOption, modifyOption
+
+<br>
+
+```scala
+val businessExpirationDate = paymentMethods
+  .andThen(index("Personal"))
+  .andThen(debitCard)
+  .andThen(expirationDate)
+
+businessExpirationDate.`modifyOption`(julien, `_.plusYears(2)`)
+// res: Option[User] = Some(User(
+//   "Julien",
+//   Address(12, "E16 4SR"),
+//   Map(
+//     "Business" -> PayPal("julien@fp-tower.com"),
+//     "Personal" -> DebitCard("4568 8980 2376 5431", 2024-04), 995)
+//   )
+// ))
+```
+
+---
+class: medium-code
+
+# Monocle 2 & 3: replaceOption, modifyOption
+
+<br>
+
+```scala
+val businessExpirationDate = paymentMethods
+  .andThen(index("Personal"))
+  .andThen(debitCard)
+  .andThen(expirationDate)
+
+businessExpirationDate.modifyOption(julien, _.plusYears(2))
+// res: Option[User] = `Some`(User(
+//   "Julien",
+//   Address(12, "E16 4SR"),
+//   Map(
+//     "Business" -> PayPal("julien@fp-tower.com"),
+//     "Personal" -> DebitCard("4568 8980 2376 5431", `2024`-04), 995)
+//   )
+// ))
+```
+
+---
+class: small-code
+
+# Monocle 2 & 3: replaceOption, modifyOption
+
+
+.forty-seven-left[
+## Missing key
+
+```scala
+val bob = User(
+  "Bob",
+  Address(12, "E16 4SR"),
+  `Map.empty`
+)
+
+businessExpirationDate.modifyOption(
+  bob,
+  _.plusYears(2)
+)
+// res: Option[User] = `None`
+```
+]
+
+.forty-seven-right[
+## Invalid payment method
+
+```scala
+val anna = User(
+  "Anna",
+  Address(12, "E16 4SR"),
+  `Map("Personal" -> PayPal("anna@fp-tower.com"))`
+)
+
+businessExpirationDate.modifyOption(
+  anna,
+  _.plusYears(2)
+)
+// res: Option[User] = `None`
+```
+]
+
+---
+class: small-code
+
+# Solution: use Either
+
+
+.forty-seven-left[
+## Missing key
+
+```scala
+val bob = User(
+  "Bob",
+  Address(12, "E16 4SR"),
+  Map.empty
+)
+
+businessExpirationDate.modifyError(
+  bob,
+  _.plusYears(2)
+)
+// res: Either[Error, User] =
+  `Left(Missing key personal in field paymentMethods)`
+```
+]
+
+.forty-seven-right[
+## Invalid payment method
+
+```scala
+val anna = User(
+  "Anna",
+  Address(12, "E16 4SR"),
+  Map("Personal" -> PayPal("anna@fp-tower.com"))
+)
+
+businessExpirationDate.modifyOption(
+  anna,
+  _.plusYears(2)
+)
+// res: Either[Error, User] =
+  `Left(Invalid PaymentMethod, expected: DebitCard, found: Paypal)`
+```
+]
+
+---
+class: center, middle
+
+# Either[???, User]
+
+---
+class: center, middle
+
+# Either[String, User] ?
+
+# Either[Throwable, User] ?
+
+---
+class: medium-code
+
+# Monocle 4
+
+<br>
+
+```scala
+trait Optic[`+Error`, Source, Target] {
+  def modifyError(source: Source, update: Target => Target): Either[`Error`, Source]
+}
+```
+
+<br>
+
+.center[
+## Similar to `E` type parameter in ZIO
+]
+
+---
+class: medium-code
+
+# Monocle 4
+
+<br>
+
+```scala
+trait Optic[`+Error`, Source, Target] {
+  def modifyError(source: Source, update: Target => Target): Either[`Error`, Source]
+
+  def andThen[Next](other: Optic[`Error`, Target, Next]): Optic[`Error`, Source, Next]
+}
+```
+
+---
+class: medium-code
+
+# Monocle 4
+
+<br>
+
+```scala
+trait Optic[+Error, Source, Target] {
+  def modifyError(source: Source, update: Target => Target): Either[Error, Source]
+
+  def andThen[Next](other: Optic[Error, Target, Next]): Optic[Error, Source, Next]
+}
+```
+
+<br>
+
+```scala
+val optic1: Optic[`String`   , User         , PaymentMethod] = ...
+val optic2: Optic[`Throwable`, PaymentMethod, YearMonth    ] = ...
+```
+
+--
+
+```scala
+optic1.andThen(optic2)
+// res: Optic[`Any`, User, YearMonth]
+```
+
+---
+class: medium-code
+
+# Monocle 4: variance and union types
+
+<br>
+
+```scala
+trait Optic[+Error, Source, Target] {
+  def modifyError(source: Source, update: Target => Target): Either[Error, Source]
+
+  def andThen[`E1`, Next](other: Optic[`E1`, Target, Next]): Optic[`E1 | Error`, Source, Next]
+}
+```
+
+<br>
+
+```scala
+val optic1: Optic[String   , User         , PaymentMethod] = ...
+val optic2: Optic[Throwable, PaymentMethod, YearMonth    ] = ...
+```
+
+```scala
+optic1.andThen(optic2)
+// res: Optic[`String | Throwable`, User, YearMonth]
+```
+
+--
+
+.center[
+### Introducing error reporting in optics (https://blog.fp-tower.com)
+]
+
+ </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js">
+    </script>
+    <script>
+        var slideshow = remark.create({
+            ratio: "16:9",
+            slideNumberFormat: '%current%',
+            highlightLines: true,
+            highlightSpans: true,
+        });
+    </script>
+  </body>
+</html>
