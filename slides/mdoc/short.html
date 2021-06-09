@@ -251,11 +251,13 @@ julien.`copy`(address =
 ```scala
 import java.time.YearMonth
 
-sealed trait PaymentMethod
+enum PaymentMethod {
 
-case class PayPal(email: String) extends PaymentMethod
+  case class PayPal(email: String)
 
-case class DebitCard(cardNumber: String, expirationDate: YearMonth, securityCode: Int) extends PaymentMethod
+  case class DebitCard(cardNumber: String, expirationDate: YearMonth, securityCode: Int)
+
+}
 ```
 
 ---
@@ -873,19 +875,13 @@ val debitCard     : Optic[PaymentMethod, DebitCard] = ...
 val expirationDate: Optic[DebitCard, YearMonth] = ...
 ```
 
-.sixty-seven-left[
-```scala
-def index[Key, Value](key: Key): Optic[Map[Key, Value], Value] = ...
-```
-]
 
-
-<br><br><br><br>
+<br><br>
 
 ```scala
 def updateExpiry(user: User, paymentName: String, newExpiry: YearMonth): User =
   paymentMethods
-    .andThen(index(paymentName))
+    .index(paymentName)
     .andThen(debitCard)
     .andThen(expirationDate)
     .replace(user, newExpiry)
@@ -1225,6 +1221,8 @@ class: center, middle, white
 
 <br><br>
 # .white[www.fp-tower.com/courses/foundations]
+
+## .white[julien@fp-tower.com]
 
 
 ---
